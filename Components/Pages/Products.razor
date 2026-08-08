@@ -1,73 +1,153 @@
 @page "/products"
 @rendermode InteractiveServer
+@inject ProductApiClient ProductApiClient
 
 <PageTitle>Products</PageTitle>
 
 <h1>Products</h1>
 
+<div class="row mb-3">
+  <div class="col-md-6">
+    <label class="form-label">
+      Search
+    </label>
+
+    <input class="form-control" @bind="query.Search" @bind:event="oninput" />
+  </div>
+
+  <div class="col-md-3 d-flex align-items-end">
+    <button class="btn btn-primary" @onclick="SearchAsync">
+      Search
+    </button>
+  </div>
+</div>
+
+@if (isLoading)
+{
+  <p>Loading products...</p>
+}
+else if (errorMessage is not null)
+{
+  <div class="alert alert-danger">
+    @errorMessage
+  </div>
+}
+else if (products.Count == 0)
+{
+  <p>No products found.</p>
+}
+else
+{
+  @foreach (var product in products)
+  {
+    <ProductCard Name="@product.Name" Price="@product.Price" OnSelected="SelectProduct" />
+  }
+}
+
+@if (!isLoading && errorMessage is null)
+{
+  <div class="mt-4">
+    <p>
+      Page @query.Page of @totalPages
+      — Total products: @totalCount
+    </p>
+
+    <button class="btn btn-secondary me-2" disabled="@(query.Page <= 1)" @onclick="PreviousPageAsync">
+      Previous
+    </button>
+
+    <button class="btn btn-secondary" disabled="@(query.Page >= totalPages)" @onclick="NextPageAsync">
+      Next
+    </button>
+  </div>
+}
+
 @if (!string.IsNullOrEmpty(selectedProduct))
 {
-  <div class="alert alert-success">
+  <div class="alert alert-success mt-3">
     Selected product: @selectedProduct
   </div>
 }
 
-<div class="mb-3">
-  <label class="form-label">Search</label>
-
-  <input class="form-control" @bind="searchText" />
-</div>
-
-<p>
-  You typed: @searchText
-</p>
-
-@foreach (var product in FilteredProducts)
-{
-  <ProductCard Name="@product.Name" Price="@product.Price" OnSelected="SelectProduct" />
-}
-
 @code
 {
-  private IEnumerable<ProductItem> FilteredProducts =>
-    products.Where(product =>
-        string.IsNullOrWhiteSpace(searchText) ||
-        product.Name.Contains(
-            searchText,
-            StringComparison.OrdinalIgnoreCase));
-  private string searchText = "";
+  private List<ProductResponse> products = [];
+
   private string selectedProduct = "";
 
-  private List<ProductItem> products =
-  [
-      new ProductItem
-        {
-            Name = "Laptop",
-            Price = 50000
-        },
+  private bool isLoading = true;
 
-        new ProductItem
-        {
-            Name = "Mouse",
-            Price = 700
-        },
+  private string? errorMessage;
 
-        new ProductItem
-        {
-            Name = "Keyboard",
-            Price = 1800
-        }
-  ];
+  private ProductQueryParameters query = new();
+
+  private int totalPages;
+  private int totalCount;
+
+
+  protected override async Task OnInitializedAsync()
+  {
+    await LoadProductsAsync();
+  }
+
+  private async Task LoadProductsAsync()
+  {
+    try
+    {
+      isLoading = true;
+      errorMessage = null;
+
+      PagedResponse<ProductResponse>? response =
+          await ProductApiClient.GetAllAsync(query);
+
+      products = response?.Items ?? [];
+
+      totalPages = response?.TotalPages ?? 0;
+      totalCount = response?.TotalCount ?? 0;
+    }
+    catch (HttpRequestException)
+    {
+      errorMessage =
+          "Could not load products from the API.";
+    }
+    finally
+    {
+      isLoading = false;
+    }
+  }
+  private async Task SearchAsync()
+  {
+    query.Page = 1;
+
+    await LoadProductsAsync();
+  }
 
   private void SelectProduct(string productName)
   {
     selectedProduct = productName;
   }
 
-  private class ProductItem
+  private async Task PreviousPageAsync()
   {
-    public string Name { get; set; } = "";
+    if (query.Page <= 1)
+    {
+      return;
+    }
 
-    public decimal Price { get; set; }
+    query.Page--;
+
+    await LoadProductsAsync();
+  }
+
+  private async Task NextPageAsync()
+  {
+    if (query.Page >= totalPages)
+    {
+      return;
+    }
+
+    query.Page++;
+
+    await LoadProductsAsync();
   }
 }

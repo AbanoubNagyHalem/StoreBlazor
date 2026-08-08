@@ -83,3 +83,4 @@ C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\StoreBlazor.gen
 C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\ref\StoreBlazor.dll
 C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\compressed\i7z3clkrst-{0}-fg7cpf607k-fg7cpf607k.gz
 C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\compressed\5quv9kckcn-{0}-fg7cpf607k-fg7cpf607k.gz
+C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\StoreBlazor.sourcelink.json

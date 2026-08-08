@@ -1,0 +1,98 @@
+@page "/products/create"
+@rendermode InteractiveServer
+
+<PageTitle>Create Product</PageTitle>
+
+<h1>Create Product</h1>
+
+<EditForm Model="model" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+
+  <DataAnnotationsValidator />
+  <ValidationSummary />
+
+  <div class="mb-3">
+    <label class="form-label">
+      Product Name
+    </label>
+
+    <InputText class="form-control" @bind-Value="model.Name" />
+
+    <ValidationMessage For="@(() => model.Name)" />
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">
+      Price
+    </label>
+
+    <InputNumber class="form-control" @bind-Value="model.Price" />
+
+    <ValidationMessage For="@(() => model.Price)" />
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">
+      Category
+    </label>
+
+    <InputSelect class="form-select" @bind-Value="model.CategoryId">
+
+      <option value="0">
+        -- Select Category --
+      </option>
+
+      <option value="1">
+        Electronics
+      </option>
+
+      <option value="2">
+        Computer Accessories
+      </option>
+
+      <option value="3">
+        Monitors
+      </option>
+
+    </InputSelect>
+
+    <ValidationMessage For="@(() => model.CategoryId)" />
+  </div>
+
+  <button type="submit" class="btn btn-primary">
+    Create Product
+  </button>
+
+</EditForm>
+
+<hr />
+
+<h3>Current Form Data</h3>
+
+<p>Name: @model.Name</p>
+<p>Price: @model.Price</p>
+
+@code
+{
+  private CreateProductRequest model = new();
+  private void HandleValidSubmit()
+  {
+    Console.WriteLine("Valid form submitted");
+
+    Console.WriteLine(
+        $"Name: {model.Name}");
+
+    Console.WriteLine(
+        $"Price: {model.Price}");
+
+    Console.WriteLine(
+        $"CategoryId: {model.CategoryId}");
+  }
+  private void HandleInvalidSubmit()
+  {
+    Console.WriteLine(
+        "Form contains validation errors");
+  }
+
+ 
+
+}
