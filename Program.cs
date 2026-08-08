@@ -19,6 +19,13 @@ builder.Services.AddHttpClient<ProductApiClient>(
             new Uri(apiBaseUrl);
     });
 
+builder.Services.AddHttpClient<CategoryApiClient>(
+    client =>
+    {
+        client.BaseAddress =
+            new Uri(apiBaseUrl);
+    });
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

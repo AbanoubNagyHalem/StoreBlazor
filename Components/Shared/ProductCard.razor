@@ -6,6 +6,10 @@
       Price: @Price
     </p>
 
+    <p class="card-text">
+      Category: @CategoryName
+    </p>
+
     <button class="btn btn-primary" @onclick="HandleClick">
       Select
     </button>
@@ -19,6 +23,9 @@
 
   [Parameter]
   public decimal Price { get; set; }
+
+  [Parameter]
+  public string CategoryName { get; set; } = "";
 
   [Parameter]
   public EventCallback<string> OnSelected { get; set; }

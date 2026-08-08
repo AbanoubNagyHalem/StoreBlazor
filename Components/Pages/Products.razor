@@ -1,13 +1,16 @@
 @page "/products"
 @rendermode InteractiveServer
 @inject ProductApiClient ProductApiClient
+@inject CategoryApiClient CategoryApiClient
 
 <PageTitle>Products</PageTitle>
 
 <h1>Products</h1>
 
-<div class="row mb-3">
-  <div class="col-md-6">
+
+<div class="row g-3 mb-3">
+
+  <div class="col-md-4">
     <label class="form-label">
       Search
     </label>
@@ -15,11 +18,69 @@
     <input class="form-control" @bind="query.Search" @bind:event="oninput" />
   </div>
 
-  <div class="col-md-3 d-flex align-items-end">
-    <button class="btn btn-primary" @onclick="SearchAsync">
-      Search
+  <div class="col-md-3">
+    <label class="form-label">
+      Category
+    </label>
+
+    <select class="form-select" @bind="query.CategoryId">
+
+      <option value="">
+        All Categories
+      </option>
+
+      @foreach (var category in categories)
+      {
+        <option value="@category.Id">
+          @category.Name
+        </option>
+      }
+
+    </select>
+  </div>
+
+  <div class="col-md-2">
+    <label class="form-label">
+      Sort By
+    </label>
+
+    <select class="form-select" @bind="query.SortBy">
+
+      <option value="">
+        Default
+      </option>
+
+      <option value="name">Name</option>
+      <option value="price">Price</option>
+      <option value="id">Id</option>
+
+    </select>
+  </div>
+
+  <div class="col-md-2">
+    <label class="form-label">
+      Direction
+    </label>
+
+    <select class="form-select" @bind="query.SortDirection">
+
+      <option value="asc">
+        Ascending
+      </option>
+
+      <option value="desc">
+        Descending
+      </option>
+
+    </select>
+  </div>
+
+  <div class="col-md-1 d-flex align-items-end">
+    <button class="btn btn-primary" @onclick="ApplyFiltersAsync">
+      Apply
     </button>
   </div>
+
 </div>
 
 @if (isLoading)
@@ -40,7 +101,8 @@ else
 {
   @foreach (var product in products)
   {
-    <ProductCard Name="@product.Name" Price="@product.Price" OnSelected="SelectProduct" />
+    <ProductCard Name="@product.Name" Price="@product.Price" CategoryName="@product.CategoryName"
+                 OnSelected="SelectProduct" />
   }
 }
 
@@ -72,7 +134,7 @@ else
 @code
 {
   private List<ProductResponse> products = [];
-
+  private List<CategoryResponse> categories = [];
   private string selectedProduct = "";
 
   private bool isLoading = true;
@@ -87,9 +149,9 @@ else
 
   protected override async Task OnInitializedAsync()
   {
+    await LoadCategoriesAsync();
     await LoadProductsAsync();
   }
-
   private async Task LoadProductsAsync()
   {
     try
@@ -115,7 +177,21 @@ else
       isLoading = false;
     }
   }
-  private async Task SearchAsync()
+
+  private async Task LoadCategoriesAsync()
+  {
+    try
+    {
+      categories =
+          await CategoryApiClient.GetAllAsync();
+    }
+    catch (HttpRequestException)
+    {
+      errorMessage =
+          "Could not load categories from the API.";
+    }
+  }
+  private async Task ApplyFiltersAsync()
   {
     query.Page = 1;
 
