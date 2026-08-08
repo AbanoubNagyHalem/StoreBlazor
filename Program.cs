@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using StoreBlazor.Components;
 using StoreBlazor.Services;
 
@@ -12,17 +13,23 @@ string apiBaseUrl =
     ?? throw new InvalidOperationException(
         "ApiSettings:BaseUrl is missing.");
 
-builder.Services.AddHttpClient<ProductApiClient>(
+builder.Services.AddScoped<AuthStateService>();
+
+builder.Services.AddScoped<ProtectedSessionStorage>();
+
+builder.Services.AddHttpClient(
+    "StoreApi",
     client =>
     {
-        client.BaseAddress = new Uri(apiBaseUrl);
+        client.BaseAddress =
+            new Uri(apiBaseUrl);
     });
 
-builder.Services.AddHttpClient<CategoryApiClient>(
-    client =>
-    {
-        client.BaseAddress = new Uri(apiBaseUrl);
-    });
+builder.Services.AddScoped<AuthApiClient>();
+
+builder.Services.AddScoped<ProductApiClient>();
+
+builder.Services.AddScoped<CategoryApiClient>();
 
 var app = builder.Build();
 

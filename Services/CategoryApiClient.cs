@@ -5,20 +5,34 @@ namespace StoreBlazor.Services;
 
 public class CategoryApiClient
 {
-  private readonly HttpClient _httpClient;
+  private readonly IHttpClientFactory
+      _httpClientFactory;
 
-  public CategoryApiClient(HttpClient httpClient)
+
+  public CategoryApiClient(
+      IHttpClientFactory httpClientFactory)
   {
-    _httpClient = httpClient;
+    _httpClientFactory =
+        httpClientFactory;
   }
 
-  public async Task<List<CategoryResponse>> GetAllAsync(
-      CancellationToken cancellationToken = default)
+
+  public async Task<List<CategoryResponse>>
+      GetAllAsync(
+          CancellationToken cancellationToken = default)
   {
+    HttpClient httpClient =
+        _httpClientFactory.CreateClient(
+            "StoreApi");
+
+
     List<CategoryResponse>? categories =
-        await _httpClient.GetFromJsonAsync<List<CategoryResponse>>(
-            "api/categories",
-            cancellationToken);
+        await httpClient
+            .GetFromJsonAsync<
+                List<CategoryResponse>>(
+                "api/categories",
+                cancellationToken);
+
 
     return categories ?? [];
   }

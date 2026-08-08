@@ -3,12 +3,16 @@
 
 @inject ProductApiClient ProductApiClient
 @inject CategoryApiClient CategoryApiClient
+@inject AuthStateService AuthState
 
 <PageTitle>Create Product</PageTitle>
 
 <h1>Create Product</h1>
 
-<p>Create a new product in the Store.</p>
+<p>
+  Create a new product in the Store.
+</p>
+
 
 @if (successMessage is not null)
 {
@@ -17,6 +21,7 @@
   </div>
 }
 
+
 @if (errorMessage is not null)
 {
   <div class="alert alert-danger">
@@ -24,9 +29,12 @@
   </div>
 }
 
-@if (isLoadingCategories)
+
+@if (isLoading)
 {
-  <p>Loading categories...</p>
+  <div class="alert alert-info">
+    Loading...
+  </div>
 }
 else
 {
@@ -36,7 +44,9 @@ else
 
     <ValidationSummary />
 
+
     <div class="mb-3">
+
       <label class="form-label">
         Name
       </label>
@@ -44,9 +54,12 @@ else
       <InputText class="form-control" @bind-Value="model.Name" />
 
       <ValidationMessage For="@(() => model.Name)" />
+
     </div>
 
+
     <div class="mb-3">
+
       <label class="form-label">
         Price
       </label>
@@ -54,9 +67,12 @@ else
       <InputNumber class="form-control" @bind-Value="model.Price" />
 
       <ValidationMessage For="@(() => model.Price)" />
+
     </div>
 
+
     <div class="mb-3">
+
       <label class="form-label">
         Category
       </label>
@@ -67,7 +83,9 @@ else
           Select category
         </option>
 
-        @foreach (var category in categories)
+
+        @foreach (
+            var category in categories)
         {
           <option value="@category.Id">
             @category.Name
@@ -77,17 +95,23 @@ else
       </InputSelect>
 
       <ValidationMessage For="@(() => model.CategoryId)" />
+
     </div>
+
 
     <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
 
       @if (isSubmitting)
       {
-        <span>Creating...</span>
+        <span>
+          Creating...
+        </span>
       }
       else
       {
-        <span>Create Product</span>
+        <span>
+          Create Product
+        </span>
       }
 
     </button>
@@ -95,59 +119,105 @@ else
   </EditForm>
 }
 
+
 @code
 {
-  private CreateProductRequest model = new();
+  private CreateProductRequest model =
+      new();
 
-  private List<CategoryResponse> categories = [];
 
-  private bool isLoadingCategories = true;
+  private List<CategoryResponse> categories =
+      [];
+
+
+  private bool isLoading = true;
 
   private bool isSubmitting;
+
 
   private string? successMessage;
 
   private string? errorMessage;
 
-  protected override async Task OnInitializedAsync()
+
+  protected override async Task
+      OnAfterRenderAsync(
+          bool firstRender)
   {
+    if (!firstRender)
+    {
+      return;
+    }
+
+
     try
     {
+      await AuthState
+          .LoadUserAsync();
+
+
       categories =
-          await CategoryApiClient.GetAllAsync();
+          await CategoryApiClient
+              .GetAllAsync();
+
+
+      Console.WriteLine(
+          $"Create Page Token Exists: {!string.IsNullOrWhiteSpace(AuthState.Token)}");
+
+      Console.WriteLine(
+          $"Create Page Role: {AuthState.Role}");
     }
     catch (HttpRequestException)
     {
       errorMessage =
-          "Could not load categories from the API.";
+          "Could not load data from the API.";
     }
     finally
     {
-      isLoadingCategories = false;
+      isLoading = false;
+
+      StateHasChanged();
     }
   }
 
-  private async Task HandleValidSubmitAsync()
+
+  private async Task
+      HandleValidSubmitAsync()
   {
     try
     {
       isSubmitting = true;
 
       successMessage = null;
+
       errorMessage = null;
 
+
+      if (!AuthState.IsAuthenticated)
+      {
+        errorMessage =
+            "You must login first.";
+
+        return;
+      }
+
+
       HttpResponseMessage response =
-          await ProductApiClient.CreateAsync(model);
+          await ProductApiClient
+              .CreateAsync(model);
+
 
       if (response.IsSuccessStatusCode)
       {
         successMessage =
             "Product created successfully.";
 
-        model = new CreateProductRequest();
+        model =
+            new CreateProductRequest();
 
         return;
       }
+
 
       errorMessage =
           $"Could not create product. Status: {(int)response.StatusCode}";

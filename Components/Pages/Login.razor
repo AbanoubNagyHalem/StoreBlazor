@@ -1,0 +1,165 @@
+@page "/login"
+@rendermode InteractiveServer
+
+@inject AuthApiClient AuthApiClient
+@inject AuthStateService AuthState
+
+<PageTitle>Login</PageTitle>
+
+<h1>Login</h1>
+
+
+@if (errorMessage is not null)
+{
+  <div class="alert alert-danger">
+    @errorMessage
+  </div>
+}
+
+
+@if (loginSucceeded)
+{
+  <div class="alert alert-success">
+    Login successful.
+  </div>
+
+  <div class="card mb-3">
+
+    <div class="card-body">
+
+      <p>
+        <strong>Name:</strong>
+        @AuthState.Name
+      </p>
+
+      <p>
+        <strong>Email:</strong>
+        @AuthState.Email
+      </p>
+
+      <p>
+        <strong>Role:</strong>
+        @AuthState.Role
+      </p>
+
+    </div>
+
+  </div>
+}
+
+
+<EditForm Model="model" OnValidSubmit="HandleLoginAsync">
+
+  <DataAnnotationsValidator />
+
+  <ValidationSummary />
+
+
+  <div class="mb-3">
+
+    <label class="form-label">
+      Email
+    </label>
+
+    <InputText class="form-control" @bind-Value="model.Email" />
+
+    <ValidationMessage For="@(() => model.Email)" />
+
+  </div>
+
+
+  <div class="mb-3">
+
+    <label class="form-label">
+      Password
+    </label>
+
+    <InputText class="form-control" type="password" @bind-Value="model.Password" />
+
+    <ValidationMessage For="@(() => model.Password)" />
+
+  </div>
+
+
+  <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+
+    @if (isSubmitting)
+    {
+      <span>
+        Logging in...
+      </span>
+    }
+    else
+    {
+      <span>
+        Login
+      </span>
+    }
+
+  </button>
+
+</EditForm>
+
+
+@code
+{
+  private LoginRequest model =
+      new();
+
+
+  private string? errorMessage;
+
+  private bool isSubmitting;
+
+  private bool loginSucceeded;
+
+
+  private async Task HandleLoginAsync()
+  {
+    try
+    {
+      isSubmitting = true;
+
+      errorMessage = null;
+
+      loginSucceeded = false;
+
+
+      AuthResponse? response =
+          await AuthApiClient
+              .LoginAsync(model);
+
+
+      if (response is null)
+      {
+        errorMessage =
+            "Invalid email or password.";
+
+        return;
+      }
+
+
+      await AuthState
+          .SetUserAsync(response);
+
+
+      loginSucceeded = true;
+
+
+      Console.WriteLine(
+          $"Login Token Exists: {!string.IsNullOrWhiteSpace(AuthState.Token)}");
+
+      Console.WriteLine(
+          $"Logged User Role: {AuthState.Role}");
+    }
+    catch (HttpRequestException)
+    {
+      errorMessage =
+          "Could not connect to the API.";
+    }
+    finally
+    {
+      isSubmitting = false;
+    }
+  }
+}

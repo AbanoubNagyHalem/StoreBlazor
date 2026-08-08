@@ -8,7 +8,8 @@ public class ProductQueryParameters
 
   public string? SortBy { get; set; }
 
-  public string SortDirection { get; set; } = "asc";
+  public string SortDirection { get; set; } =
+      "asc";
 
   public int Page { get; set; } = 1;
 
