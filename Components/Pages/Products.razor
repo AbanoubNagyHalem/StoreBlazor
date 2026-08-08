@@ -1,0 +1,73 @@
+@page "/products"
+@rendermode InteractiveServer
+
+<PageTitle>Products</PageTitle>
+
+<h1>Products</h1>
+
+@if (!string.IsNullOrEmpty(selectedProduct))
+{
+  <div class="alert alert-success">
+    Selected product: @selectedProduct
+  </div>
+}
+
+<div class="mb-3">
+  <label class="form-label">Search</label>
+
+  <input class="form-control" @bind="searchText" />
+</div>
+
+<p>
+  You typed: @searchText
+</p>
+
+@foreach (var product in FilteredProducts)
+{
+  <ProductCard Name="@product.Name" Price="@product.Price" OnSelected="SelectProduct" />
+}
+
+@code
+{
+  private IEnumerable<ProductItem> FilteredProducts =>
+    products.Where(product =>
+        string.IsNullOrWhiteSpace(searchText) ||
+        product.Name.Contains(
+            searchText,
+            StringComparison.OrdinalIgnoreCase));
+  private string searchText = "";
+  private string selectedProduct = "";
+
+  private List<ProductItem> products =
+  [
+      new ProductItem
+        {
+            Name = "Laptop",
+            Price = 50000
+        },
+
+        new ProductItem
+        {
+            Name = "Mouse",
+            Price = 700
+        },
+
+        new ProductItem
+        {
+            Name = "Keyboard",
+            Price = 1800
+        }
+  ];
+
+  private void SelectProduct(string productName)
+  {
+    selectedProduct = productName;
+  }
+
+  private class ProductItem
+  {
+    public string Name { get; set; } = "";
+
+    public decimal Price { get; set; }
+  }
+}

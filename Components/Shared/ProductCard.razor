@@ -1,0 +1,30 @@
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">@Name</h5>
+
+    <p class="card-text">
+      Price: @Price
+    </p>
+
+    <button class="btn btn-primary" @onclick="HandleClick">
+      Select
+    </button>
+  </div>
+</div>
+
+@code
+{
+  [Parameter]
+  public string Name { get; set; } = "";
+
+  [Parameter]
+  public decimal Price { get; set; }
+
+  [Parameter]
+  public EventCallback<string> OnSelected { get; set; }
+
+  private async Task HandleClick()
+  {
+    await OnSelected.InvokeAsync(Name);
+  }
+}
