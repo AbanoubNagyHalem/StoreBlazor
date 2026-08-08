@@ -1,5 +1,6 @@
 @page "/products"
 @rendermode InteractiveServer
+
 @inject ProductApiClient ProductApiClient
 @inject CategoryApiClient CategoryApiClient
 
@@ -7,8 +8,7 @@
 
 <h1>Products</h1>
 
-
-<div class="row g-3 mb-3">
+<div class="row g-3 mb-4">
 
   <div class="col-md-4">
     <label class="form-label">
@@ -50,9 +50,17 @@
         Default
       </option>
 
-      <option value="name">Name</option>
-      <option value="price">Price</option>
-      <option value="id">Id</option>
+      <option value="name">
+        Name
+      </option>
+
+      <option value="price">
+        Price
+      </option>
+
+      <option value="id">
+        Id
+      </option>
 
     </select>
   </div>
@@ -76,16 +84,21 @@
   </div>
 
   <div class="col-md-1 d-flex align-items-end">
+
     <button class="btn btn-primary" @onclick="ApplyFiltersAsync">
       Apply
     </button>
+
   </div>
 
 </div>
 
+
 @if (isLoading)
 {
-  <p>Loading products...</p>
+  <div class="alert alert-info">
+    Loading products...
+  </div>
 }
 else if (errorMessage is not null)
 {
@@ -95,7 +108,9 @@ else if (errorMessage is not null)
 }
 else if (products.Count == 0)
 {
-  <p>No products found.</p>
+  <div class="alert alert-warning">
+    No products found.
+  </div>
 }
 else
 {
@@ -106,77 +121,73 @@ else
   }
 }
 
-@if (!isLoading && errorMessage is null)
-{
-  <div class="mt-4">
-    <p>
-      Page @query.Page of @totalPages
-      — Total products: @totalCount
-    </p>
 
-    <button class="btn btn-secondary me-2" disabled="@(query.Page <= 1)" @onclick="PreviousPageAsync">
-      Previous
-    </button>
-
-    <button class="btn btn-secondary" disabled="@(query.Page >= totalPages)" @onclick="NextPageAsync">
-      Next
-    </button>
-  </div>
-}
-
-@if (!string.IsNullOrEmpty(selectedProduct))
+@if (!string.IsNullOrWhiteSpace(selectedProduct))
 {
   <div class="alert alert-success mt-3">
     Selected product: @selectedProduct
   </div>
 }
 
+
+@if (!isLoading &&
+     errorMessage is null &&
+     totalCount > 0)
+{
+  <div class="mt-4">
+
+    <p>
+      Page @query.Page of @totalPages
+      — Total products: @totalCount
+    </p>
+
+    <button class="btn btn-secondary me-2" disabled="@(query.Page <= 1)" @onclick="PreviousPageAsync">
+
+      Previous
+
+    </button>
+
+    <button class="btn btn-secondary" disabled="@(query.Page >= totalPages)" @onclick="NextPageAsync">
+
+      Next
+
+    </button>
+
+  </div>
+}
+
+
 @code
 {
   private List<ProductResponse> products = [];
-  private List<CategoryResponse> categories = [];
-  private string selectedProduct = "";
 
-  private bool isLoading = true;
+  private List<CategoryResponse> categories = [];
+
+  private ProductQueryParameters query = new()
+  {
+    Page = 1,
+    PageSize = 3,
+    SortDirection = "asc"
+  };
+
+  private string selectedProduct = "";
 
   private string? errorMessage;
 
-  private ProductQueryParameters query = new();
+  private bool isLoading = true;
+
+  private int totalCount;
 
   private int totalPages;
-  private int totalCount;
 
 
   protected override async Task OnInitializedAsync()
   {
     await LoadCategoriesAsync();
+
     await LoadProductsAsync();
   }
-  private async Task LoadProductsAsync()
-  {
-    try
-    {
-      isLoading = true;
-      errorMessage = null;
 
-      PagedResponse<ProductResponse>? response =
-          await ProductApiClient.GetAllAsync(query);
-
-      products = response?.Items ?? [];
-
-      totalPages = response?.TotalPages ?? 0;
-      totalCount = response?.TotalCount ?? 0;
-    }
-    catch (HttpRequestException)
-    {
-      errorMessage =
-          "Could not load products from the API.";
-    }
-    finally
-    {
-      isLoading = false;
-    }
-  }
 
   private async Task LoadCategoriesAsync()
   {
@@ -191,6 +202,54 @@ else
           "Could not load categories from the API.";
     }
   }
+
+
+  private async Task LoadProductsAsync()
+  {
+    try
+    {
+      isLoading = true;
+
+      errorMessage = null;
+
+      PagedResponse<ProductResponse>? response =
+          await ProductApiClient.GetAllAsync(query);
+
+      if (response is null)
+      {
+        products = [];
+
+        totalCount = 0;
+
+        totalPages = 0;
+
+        return;
+      }
+
+      products = response.Items;
+
+      totalCount = response.TotalCount;
+
+      totalPages = response.TotalPages;
+    }
+    catch (HttpRequestException)
+    {
+      products = [];
+
+      totalCount = 0;
+
+      totalPages = 0;
+
+      errorMessage =
+          "Could not load products from the API.";
+    }
+    finally
+    {
+      isLoading = false;
+    }
+  }
+
+
   private async Task ApplyFiltersAsync()
   {
     query.Page = 1;
@@ -198,10 +257,6 @@ else
     await LoadProductsAsync();
   }
 
-  private void SelectProduct(string productName)
-  {
-    selectedProduct = productName;
-  }
 
   private async Task PreviousPageAsync()
   {
@@ -215,6 +270,7 @@ else
     await LoadProductsAsync();
   }
 
+
   private async Task NextPageAsync()
   {
     if (query.Page >= totalPages)
@@ -225,5 +281,12 @@ else
     query.Page++;
 
     await LoadProductsAsync();
+  }
+
+
+  private void SelectProduct(
+      string productName)
+  {
+    selectedProduct = productName;
   }
 }

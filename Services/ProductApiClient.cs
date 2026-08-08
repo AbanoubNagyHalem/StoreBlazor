@@ -7,8 +7,7 @@ public class ProductApiClient
 {
   private readonly HttpClient _httpClient;
 
-  public ProductApiClient(
-      HttpClient httpClient)
+  public ProductApiClient(HttpClient httpClient)
   {
     _httpClient = httpClient;
   }
@@ -22,12 +21,13 @@ public class ProductApiClient
         $"?search={Uri.EscapeDataString(parameters.Search ?? "")}" +
         $"&page={parameters.Page}" +
         $"&pageSize={parameters.PageSize}" +
-        $"&sortBy={parameters.SortBy}" +
+        $"&sortBy={parameters.SortBy ?? ""}" +
         $"&sortDirection={parameters.SortDirection}";
 
     if (parameters.CategoryId.HasValue)
     {
-      url += $"&categoryId={parameters.CategoryId.Value}";
+      url +=
+          $"&categoryId={parameters.CategoryId.Value}";
     }
 
     return await _httpClient

@@ -7,8 +7,7 @@ public class CategoryApiClient
 {
   private readonly HttpClient _httpClient;
 
-  public CategoryApiClient(
-      HttpClient httpClient)
+  public CategoryApiClient(HttpClient httpClient)
   {
     _httpClient = httpClient;
   }
@@ -17,10 +16,9 @@ public class CategoryApiClient
       CancellationToken cancellationToken = default)
   {
     List<CategoryResponse>? categories =
-        await _httpClient
-            .GetFromJsonAsync<List<CategoryResponse>>(
-                "api/categories",
-                cancellationToken);
+        await _httpClient.GetFromJsonAsync<List<CategoryResponse>>(
+            "api/categories",
+            cancellationToken);
 
     return categories ?? [];
   }

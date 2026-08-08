@@ -1,98 +1,165 @@
 @page "/products/create"
 @rendermode InteractiveServer
 
+@inject ProductApiClient ProductApiClient
+@inject CategoryApiClient CategoryApiClient
+
 <PageTitle>Create Product</PageTitle>
 
 <h1>Create Product</h1>
 
-<EditForm Model="model" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+<p>Create a new product in the Store.</p>
 
-  <DataAnnotationsValidator />
-  <ValidationSummary />
-
-  <div class="mb-3">
-    <label class="form-label">
-      Product Name
-    </label>
-
-    <InputText class="form-control" @bind-Value="model.Name" />
-
-    <ValidationMessage For="@(() => model.Name)" />
+@if (successMessage is not null)
+{
+  <div class="alert alert-success">
+    @successMessage
   </div>
+}
 
-  <div class="mb-3">
-    <label class="form-label">
-      Price
-    </label>
-
-    <InputNumber class="form-control" @bind-Value="model.Price" />
-
-    <ValidationMessage For="@(() => model.Price)" />
+@if (errorMessage is not null)
+{
+  <div class="alert alert-danger">
+    @errorMessage
   </div>
+}
 
-  <div class="mb-3">
-    <label class="form-label">
-      Category
-    </label>
+@if (isLoadingCategories)
+{
+  <p>Loading categories...</p>
+}
+else
+{
+  <EditForm Model="model" OnValidSubmit="HandleValidSubmitAsync">
 
-    <InputSelect class="form-select" @bind-Value="model.CategoryId">
+    <DataAnnotationsValidator />
 
-      <option value="0">
-        -- Select Category --
-      </option>
+    <ValidationSummary />
 
-      <option value="1">
-        Electronics
-      </option>
+    <div class="mb-3">
+      <label class="form-label">
+        Name
+      </label>
 
-      <option value="2">
-        Computer Accessories
-      </option>
+      <InputText class="form-control" @bind-Value="model.Name" />
 
-      <option value="3">
-        Monitors
-      </option>
+      <ValidationMessage For="@(() => model.Name)" />
+    </div>
 
-    </InputSelect>
+    <div class="mb-3">
+      <label class="form-label">
+        Price
+      </label>
 
-    <ValidationMessage For="@(() => model.CategoryId)" />
-  </div>
+      <InputNumber class="form-control" @bind-Value="model.Price" />
 
-  <button type="submit" class="btn btn-primary">
-    Create Product
-  </button>
+      <ValidationMessage For="@(() => model.Price)" />
+    </div>
 
-</EditForm>
+    <div class="mb-3">
+      <label class="form-label">
+        Category
+      </label>
 
-<hr />
+      <InputSelect class="form-select" @bind-Value="model.CategoryId">
 
-<h3>Current Form Data</h3>
+        <option value="0">
+          Select category
+        </option>
 
-<p>Name: @model.Name</p>
-<p>Price: @model.Price</p>
+        @foreach (var category in categories)
+        {
+          <option value="@category.Id">
+            @category.Name
+          </option>
+        }
+
+      </InputSelect>
+
+      <ValidationMessage For="@(() => model.CategoryId)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+
+      @if (isSubmitting)
+      {
+        <span>Creating...</span>
+      }
+      else
+      {
+        <span>Create Product</span>
+      }
+
+    </button>
+
+  </EditForm>
+}
 
 @code
 {
   private CreateProductRequest model = new();
-  private void HandleValidSubmit()
+
+  private List<CategoryResponse> categories = [];
+
+  private bool isLoadingCategories = true;
+
+  private bool isSubmitting;
+
+  private string? successMessage;
+
+  private string? errorMessage;
+
+  protected override async Task OnInitializedAsync()
   {
-    Console.WriteLine("Valid form submitted");
-
-    Console.WriteLine(
-        $"Name: {model.Name}");
-
-    Console.WriteLine(
-        $"Price: {model.Price}");
-
-    Console.WriteLine(
-        $"CategoryId: {model.CategoryId}");
+    try
+    {
+      categories =
+          await CategoryApiClient.GetAllAsync();
+    }
+    catch (HttpRequestException)
+    {
+      errorMessage =
+          "Could not load categories from the API.";
+    }
+    finally
+    {
+      isLoadingCategories = false;
+    }
   }
-  private void HandleInvalidSubmit()
+
+  private async Task HandleValidSubmitAsync()
   {
-    Console.WriteLine(
-        "Form contains validation errors");
+    try
+    {
+      isSubmitting = true;
+
+      successMessage = null;
+      errorMessage = null;
+
+      HttpResponseMessage response =
+          await ProductApiClient.CreateAsync(model);
+
+      if (response.IsSuccessStatusCode)
+      {
+        successMessage =
+            "Product created successfully.";
+
+        model = new CreateProductRequest();
+
+        return;
+      }
+
+      errorMessage =
+          $"Could not create product. Status: {(int)response.StatusCode}";
+    }
+    catch (HttpRequestException)
+    {
+      errorMessage =
+          "Could not connect to the API.";
+    }
+    finally
+    {
+      isSubmitting = false;
+    }
   }
-
- 
-
 }
