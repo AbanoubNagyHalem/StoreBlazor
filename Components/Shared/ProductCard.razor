@@ -1,4 +1,5 @@
 <div class="card mb-3">
+
   <div class="card-body">
 
     <h5 class="card-title">
@@ -13,36 +14,71 @@
       Category: @CategoryName
     </p>
 
-    <button class="btn btn-primary" @onclick="HandleClick">
+    <button class="btn btn-primary" @onclick="HandleSelectAsync">
+
       Select
+
     </button>
 
-    <a class="btn btn-warning ms-2" href="@($"products/edit/{Id}")">
-      Edit
-    </a>
+
+    @if (ShowAdminActions)
+    {
+      <a class="btn btn-warning ms-2" href="@($"products/edit/{Id}")">
+
+        Edit
+
+      </a>
+
+      <button class="btn btn-danger ms-2" @onclick="HandleDeleteAsync">
+
+        Delete
+
+      </button>
+    }
 
   </div>
+
 </div>
+
 
 @code
 {
   [Parameter]
   public int Id { get; set; }
 
+
   [Parameter]
   public string Name { get; set; } = "";
+
 
   [Parameter]
   public decimal Price { get; set; }
 
+
   [Parameter]
   public string CategoryName { get; set; } = "";
+
+
+  [Parameter]
+  public bool ShowAdminActions { get; set; }
+
 
   [Parameter]
   public EventCallback<string> OnSelected { get; set; }
 
-  private async Task HandleClick()
+
+  [Parameter]
+  public EventCallback<int> OnDelete { get; set; }
+
+
+  private async Task HandleSelectAsync()
   {
     await OnSelected.InvokeAsync(Name);
+  }
+
+
+  private async Task HandleDeleteAsync()
+  {
+    await OnDelete.InvokeAsync(Id);
   }
 }

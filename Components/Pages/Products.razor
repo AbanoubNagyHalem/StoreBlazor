@@ -3,22 +3,38 @@
 
 @inject ProductApiClient ProductApiClient
 @inject CategoryApiClient CategoryApiClient
+@inject AuthStateService AuthState
+@inject IJSRuntime JS
 
 <PageTitle>Products</PageTitle>
 
+
 <h1>Products</h1>
+
+
+@if (errorMessage is not null)
+{
+  <div class="alert alert-danger">
+    @errorMessage
+  </div>
+}
+
 
 <div class="row g-3 mb-4">
 
   <div class="col-md-4">
+
     <label class="form-label">
       Search
     </label>
 
     <input class="form-control" @bind="query.Search" @bind:event="oninput" />
+
   </div>
 
+
   <div class="col-md-3">
+
     <label class="form-label">
       Category
     </label>
@@ -37,9 +53,12 @@
       }
 
     </select>
+
   </div>
 
+
   <div class="col-md-2">
+
     <label class="form-label">
       Sort By
     </label>
@@ -63,9 +82,12 @@
       </option>
 
     </select>
+
   </div>
 
+
   <div class="col-md-2">
+
     <label class="form-label">
       Direction
     </label>
@@ -81,12 +103,16 @@
       </option>
 
     </select>
+
   </div>
+
 
   <div class="col-md-1 d-flex align-items-end">
 
     <button class="btn btn-primary" @onclick="ApplyFiltersAsync">
+
       Apply
+
     </button>
 
   </div>
@@ -100,12 +126,6 @@
     Loading products...
   </div>
 }
-else if (errorMessage is not null)
-{
-  <div class="alert alert-danger">
-    @errorMessage
-  </div>
-}
 else if (products.Count == 0)
 {
   <div class="alert alert-warning">
@@ -117,35 +137,42 @@ else
   @foreach (var product in products)
   {
     <ProductCard Id="@product.Id" Name="@product.Name" Price="@product.Price" CategoryName="@product.CategoryName"
-                 OnSelected="SelectProduct" />
+                 OnSelected="SelectProduct" OnDelete="DeleteProductAsync" ShowAdminActions="@AuthState.IsAdmin" />
   }
 }
 
 
-@if (!string.IsNullOrWhiteSpace(selectedProduct))
+@if (!string.IsNullOrWhiteSpace(
+        selectedProduct))
 {
   <div class="alert alert-success mt-3">
-    Selected product: @selectedProduct
+
+    Selected product:
+    @selectedProduct
+
   </div>
 }
 
 
 @if (!isLoading &&
-     errorMessage is null &&
      totalCount > 0)
 {
   <div class="mt-4">
 
     <p>
-      Page @query.Page of @totalPages
-      — Total products: @totalCount
+      Page @query.Page
+      of @totalPages
+      — Total products:
+      @totalCount
     </p>
+
 
     <button class="btn btn-secondary me-2" disabled="@(query.Page <= 1)" @onclick="PreviousPageAsync">
 
       Previous
 
     </button>
+
 
     <button class="btn btn-secondary" disabled="@(query.Page >= totalPages)" @onclick="NextPageAsync">
 
@@ -159,33 +186,59 @@ else
 
 @code
 {
-  private List<ProductResponse> products = [];
+  private List<ProductResponse> products =
+      [];
 
-  private List<CategoryResponse> categories = [];
 
-  private ProductQueryParameters query = new()
-  {
-    Page = 1,
-    PageSize = 3,
-    SortDirection = "asc"
-  };
+  private List<CategoryResponse> categories =
+      [];
+
+
+  private ProductQueryParameters query =
+      new()
+      {
+        Page = 1,
+        PageSize = 3,
+        SortDirection = "asc"
+      };
+
 
   private string selectedProduct = "";
 
   private string? errorMessage;
 
+
   private bool isLoading = true;
+
 
   private int totalCount;
 
   private int totalPages;
 
 
-  protected override async Task OnInitializedAsync()
+  protected override async Task
+      OnInitializedAsync()
   {
     await LoadCategoriesAsync();
 
     await LoadProductsAsync();
+  }
+
+
+  protected override async Task
+      OnAfterRenderAsync(
+          bool firstRender)
+  {
+    if (!firstRender)
+    {
+      return;
+    }
+
+
+    await AuthState.LoadUserAsync();
+
+
+    StateHasChanged();
   }
 
 
@@ -194,7 +247,8 @@ else
     try
     {
       categories =
-          await CategoryApiClient.GetAllAsync();
+          await CategoryApiClient
+              .GetAllAsync();
     }
     catch (HttpRequestException)
     {
@@ -212,8 +266,11 @@ else
 
       errorMessage = null;
 
+
       PagedResponse<ProductResponse>? response =
-          await ProductApiClient.GetAllAsync(query);
+          await ProductApiClient
+              .GetAllAsync(query);
+
 
       if (response is null)
       {
@@ -226,11 +283,17 @@ else
         return;
       }
 
-      products = response.Items;
 
-      totalCount = response.TotalCount;
+      products =
+          response.Items;
 
-      totalPages = response.TotalPages;
+
+      totalCount =
+          response.TotalCount;
+
+
+      totalPages =
+          response.TotalPages;
     }
     catch (HttpRequestException)
     {
@@ -239,6 +302,7 @@ else
       totalCount = 0;
 
       totalPages = 0;
+
 
       errorMessage =
           "Could not load products from the API.";
@@ -265,7 +329,9 @@ else
       return;
     }
 
+
     query.Page--;
+
 
     await LoadProductsAsync();
   }
@@ -278,7 +344,9 @@ else
       return;
     }
 
+
     query.Page++;
+
 
     await LoadProductsAsync();
   }
@@ -287,6 +355,91 @@ else
   private void SelectProduct(
       string productName)
   {
-    selectedProduct = productName;
+    selectedProduct =
+        productName;
+  }
+
+
+  private async Task DeleteProductAsync(
+      int productId)
+  {
+    bool confirmed =
+        await JS.InvokeAsync<bool>(
+            "confirm",
+            "Are you sure you want to delete this product?");
+
+
+    if (!confirmed)
+    {
+      return;
+    }
+
+
+    try
+    {
+      errorMessage = null;
+
+
+      HttpResponseMessage response =
+          await ProductApiClient
+              .DeleteAsync(productId);
+
+
+      if (response.IsSuccessStatusCode)
+      {
+        products.RemoveAll(
+            product =>
+                product.Id ==
+                productId);
+
+
+        if (totalCount > 0)
+        {
+          totalCount--;
+        }
+
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.Unauthorized)
+      {
+        errorMessage =
+            "You must login first.";
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.Forbidden)
+      {
+        errorMessage =
+            "You do not have permission to delete products.";
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.NotFound)
+      {
+        errorMessage =
+            "Product was not found.";
+
+        return;
+      }
+
+
+      errorMessage =
+          $"Could not delete product. Status: {(int)response.StatusCode}";
+    }
+    catch (HttpRequestException)
+    {
+      errorMessage =
+          "Could not connect to the API.";
+    }
   }
 }
