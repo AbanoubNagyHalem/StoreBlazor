@@ -116,7 +116,7 @@ else
 {
   @foreach (var product in products)
   {
-    <ProductCard Name="@product.Name" Price="@product.Price" CategoryName="@product.CategoryName"
+    <ProductCard Id="@product.Id" Name="@product.Name" Price="@product.Price" CategoryName="@product.CategoryName"
                  OnSelected="SelectProduct" />
   }
 }

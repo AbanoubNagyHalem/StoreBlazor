@@ -1,0 +1,246 @@
+@page "/products/edit/{Id:int}"
+@rendermode InteractiveServer
+
+@inject ProductApiClient ProductApiClient
+@inject CategoryApiClient CategoryApiClient
+@inject AuthStateService AuthState
+@inject NavigationManager Navigation
+
+<PageTitle>Edit Product</PageTitle>
+
+<h1>Edit Product</h1>
+
+@if (isLoading)
+{
+  <div class="alert alert-info">
+    Loading product...
+  </div>
+}
+else if (notFound)
+{
+  <div class="alert alert-warning">
+    Product not found.
+  </div>
+}
+else
+{
+  @if (successMessage is not null)
+  {
+    <div class="alert alert-success">
+      @successMessage
+    </div>
+  }
+
+  @if (errorMessage is not null)
+  {
+    <div class="alert alert-danger">
+      @errorMessage
+    </div>
+  }
+
+  <EditForm Model="model" OnValidSubmit="HandleUpdateAsync">
+
+    <DataAnnotationsValidator />
+
+    <ValidationSummary />
+
+    <div class="mb-3">
+      <label class="form-label">
+        Name
+      </label>
+
+      <InputText class="form-control" @bind-Value="model.Name" />
+
+      <ValidationMessage For="@(() => model.Name)" />
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">
+        Price
+      </label>
+
+      <InputNumber class="form-control" @bind-Value="model.Price" />
+
+      <ValidationMessage For="@(() => model.Price)" />
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">
+        Category
+      </label>
+
+      <InputSelect class="form-select" @bind-Value="model.CategoryId">
+
+        <option value="0">
+          Select category
+        </option>
+
+        @foreach (var category in categories)
+        {
+          <option value="@category.Id">
+            @category.Name
+          </option>
+        }
+
+      </InputSelect>
+
+      <ValidationMessage For="@(() => model.CategoryId)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary me-2" disabled="@isSubmitting">
+
+      @if (isSubmitting)
+      {
+        <span>Saving...</span>
+      }
+      else
+      {
+        <span>Save Changes</span>
+      }
+
+    </button>
+
+    <button type="button" class="btn btn-secondary" @onclick="GoBack">
+
+      Cancel
+
+    </button>
+
+  </EditForm>
+}
+
+@code
+{
+  [Parameter]
+  public int Id { get; set; }
+
+
+  private UpdateProductRequest model =
+      new();
+
+
+  private List<CategoryResponse> categories =
+      [];
+
+
+  private bool isLoading = true;
+
+  private bool isSubmitting;
+
+  private bool notFound;
+
+
+  private string? successMessage;
+
+  private string? errorMessage;
+
+
+  protected override async Task
+      OnAfterRenderAsync(
+          bool firstRender)
+  {
+    if (!firstRender)
+    {
+      return;
+    }
+
+    try
+    {
+      await AuthState.LoadUserAsync();
+
+      if (!AuthState.IsAuthenticated)
+      {
+        errorMessage =
+            "You must login first.";
+
+        return;
+      }
+
+      categories =
+          await CategoryApiClient
+              .GetAllAsync();
+
+
+      ProductResponse? product =
+          await ProductApiClient
+              .GetByIdAsync(Id);
+
+
+      if (product is null)
+      {
+        notFound = true;
+
+        return;
+      }
+
+
+      model = new UpdateProductRequest
+      {
+        Name = product.Name,
+        Price = product.Price,
+        CategoryId =
+              product.CategoryId
+      };
+    }
+    catch (HttpRequestException)
+    {
+      errorMessage =
+          "Could not load product data.";
+    }
+    finally
+    {
+      isLoading = false;
+
+      StateHasChanged();
+    }
+  }
+
+
+  private async Task HandleUpdateAsync()
+  {
+    try
+    {
+      isSubmitting = true;
+
+      successMessage = null;
+
+      errorMessage = null;
+
+
+      HttpResponseMessage response =
+          await ProductApiClient
+              .UpdateAsync(
+                  Id,
+                  model);
+
+
+      if (response.IsSuccessStatusCode)
+      {
+        successMessage =
+            "Product updated successfully.";
+
+        return;
+      }
+
+
+      errorMessage =
+          $"Could not update product. Status: {(int)response.StatusCode}";
+    }
+    catch (HttpRequestException)
+    {
+      errorMessage =
+          "Could not connect to the API.";
+    }
+    finally
+    {
+      isSubmitting = false;
+    }
+  }
+
+
+  private void GoBack()
+  {
+    Navigation.NavigateTo(
+        "/products");
+  }
+}

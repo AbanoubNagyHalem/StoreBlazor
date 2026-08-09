@@ -17,11 +17,18 @@
       Select
     </button>
 
+    <a class="btn btn-warning ms-2" href="@($"products/edit/{Id}")">
+      Edit
+    </a>
+
   </div>
 </div>
 
 @code
 {
+  [Parameter]
+  public int Id { get; set; }
+
   [Parameter]
   public string Name { get; set; } = "";
 
