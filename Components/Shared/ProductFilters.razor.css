@@ -1,0 +1,12 @@
+.filter-panel {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #374151;
+}

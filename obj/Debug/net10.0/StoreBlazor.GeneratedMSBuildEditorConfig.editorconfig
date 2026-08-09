@@ -55,20 +55,12 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xOb3RGb3VuZC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abano/OneDrive/Desktop/C\#/StoreBlazor/Components/Pages/Products.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQcm9kdWN0cy5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = 
-
 [C:/Users/abano/OneDrive/Desktop/C\#/StoreBlazor/Components/Pages/Weather.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xXZWF0aGVyLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/abano/OneDrive/Desktop/C\#/StoreBlazor/Components/Routes.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xSb3V0ZXMucmF6b3I=
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/abano/OneDrive/Desktop/C\#/StoreBlazor/Components/Shared/ProductCard.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcUHJvZHVjdENhcmQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/abano/OneDrive/Desktop/C\#/StoreBlazor/Components/_Imports.razor]
@@ -86,3 +78,19 @@ build_metadata.AdditionalFiles.CssScope = b-kvr1xctr1k
 [C:/Users/abano/OneDrive/Desktop/C\#/StoreBlazor/Components/Layout/ReconnectModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcUmVjb25uZWN0TW9kYWwucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = b-gwujlockv2
+
+[C:/Users/abano/OneDrive/Desktop/C\#/StoreBlazor/Components/Pages/Products.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQcm9kdWN0cy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-i00vf5dx4p
+
+[C:/Users/abano/OneDrive/Desktop/C\#/StoreBlazor/Components/Shared/ProductCard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcUHJvZHVjdENhcmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-x10ikpg8br
+
+[C:/Users/abano/OneDrive/Desktop/C\#/StoreBlazor/Components/Shared/ProductFilters.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcUHJvZHVjdEZpbHRlcnMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-sk86n0oat2
+
+[C:/Users/abano/OneDrive/Desktop/C\#/StoreBlazor/Components/Shared/ProductPagination.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcUHJvZHVjdFBhZ2luYXRpb24ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-depac2xtt6

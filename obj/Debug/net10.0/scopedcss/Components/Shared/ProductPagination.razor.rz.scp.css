@@ -1,0 +1,33 @@
+.pagination-container[b-depac2xtt6] {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 1.5rem;
+  margin-top: 2rem;
+}
+
+.pagination-actions[b-depac2xtt6] {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pagination-info[b-depac2xtt6] {
+  color: #4b5563;
+}
+
+@media (max-width: 640px) {
+  .pagination-container[b-depac2xtt6] {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pagination-actions[b-depac2xtt6] {
+    width: 100%;
+  }
+
+  .pagination-actions button[b-depac2xtt6] {
+    flex: 1;
+  }
+}

@@ -8,255 +8,160 @@
 
 <PageTitle>Products</PageTitle>
 
+<div class="products-page">
 
-<h1>Products</h1>
+  <div class="page-header">
 
+    <div>
+      <h1>Products</h1>
 
-@if (errorMessage is not null)
-{
-  <div class="alert alert-danger">
-    @errorMessage
+      <p class="text-muted">
+        Browse and manage store products.
+      </p>
+    </div>
+
+    @if (AuthState.IsAdmin)
+    {
+      <a href="/products/create" class="btn btn-dark">
+
+        + Add Product
+
+      </a>
+    }
+
   </div>
-}
 
+  <ProductFilters Search="@query.Search" SearchChanged="OnSearchChanged" CategoryId="@query.CategoryId"
+                  CategoryIdChanged="OnCategoryChanged" SortBy="@query.SortBy" SortByChanged="OnSortByChanged"
+                  SortDirection="@query.SortDirection" SortDirectionChanged="OnSortDirectionChanged" Categories="@categories"
+                  OnApply="ApplyFiltersAsync" />
 
-<div class="row g-3 mb-4">
+  @if (errorMessage is not null)
+  {
+    <div class="alert alert-danger">
+      @errorMessage
+    </div>
+  }
 
-  <div class="col-md-4">
+  @if (!string.IsNullOrWhiteSpace(selectedProduct))
+  {
+    <div class="alert alert-success">
 
-    <label class="form-label">
-      Search
-    </label>
+      Selected product:
 
-    <input class="form-control" @bind="query.Search" @bind:event="oninput" />
+      <strong>
+        @selectedProduct
+      </strong>
 
-  </div>
+    </div>
+  }
 
+  @if (isLoading)
+  {
+    <div class="products-loading">
 
-  <div class="col-md-3">
+      <div class="spinner-border" role="status">
 
-    <label class="form-label">
-      Category
-    </label>
+        <span class="visually-hidden">
+          Loading...
+        </span>
 
-    <select class="form-select" @bind="query.CategoryId">
+      </div>
 
-      <option value="">
-        All Categories
-      </option>
+      <p>
+        Loading products...
+      </p>
 
-      @foreach (var category in categories)
+    </div>
+  }
+  else if (products.Count == 0)
+  {
+    <div class="empty-state">
+
+      <h3>
+        No products found
+      </h3>
+
+      <p>
+        Try changing your search or filters.
+      </p>
+
+    </div>
+  }
+  else
+  {
+    <div class="products-grid">
+
+      @foreach (var product in products)
       {
-        <option value="@category.Id">
-          @category.Name
-        </option>
+        <ProductCard Id="@product.Id" Name="@product.Name" Price="@product.Price" CategoryName="@product.CategoryName"
+                     OnSelected="SelectProduct" OnDelete="DeleteProductAsync" ShowAdminActions="@AuthState.IsAdmin" />
       }
 
-    </select>
+    </div>
 
-  </div>
-
-
-  <div class="col-md-2">
-
-    <label class="form-label">
-      Sort By
-    </label>
-
-    <select class="form-select" @bind="query.SortBy">
-
-      <option value="">
-        Default
-      </option>
-
-      <option value="name">
-        Name
-      </option>
-
-      <option value="price">
-        Price
-      </option>
-
-      <option value="id">
-        Id
-      </option>
-
-    </select>
-
-  </div>
-
-
-  <div class="col-md-2">
-
-    <label class="form-label">
-      Direction
-    </label>
-
-    <select class="form-select" @bind="query.SortDirection">
-
-      <option value="asc">
-        Ascending
-      </option>
-
-      <option value="desc">
-        Descending
-      </option>
-
-    </select>
-
-  </div>
-
-
-  <div class="col-md-1 d-flex align-items-end">
-
-    <button class="btn btn-primary" @onclick="ApplyFiltersAsync">
-
-      Apply
-
-    </button>
-
-  </div>
+    <ProductPagination CurrentPage="@query.Page" TotalPages="@totalPages" TotalCount="@totalCount"
+                       OnPrevious="PreviousPageAsync" OnNext="NextPageAsync" />
+  }
 
 </div>
 
+@code {
+  private List<ProductResponse> products = [];
 
-@if (isLoading)
-{
-  <div class="alert alert-info">
-    Loading products...
-  </div>
-}
-else if (products.Count == 0)
-{
-  <div class="alert alert-warning">
-    No products found.
-  </div>
-}
-else
-{
-  @foreach (var product in products)
-  {
-    <ProductCard Id="@product.Id" Name="@product.Name" Price="@product.Price" CategoryName="@product.CategoryName"
-                 OnSelected="SelectProduct" OnDelete="DeleteProductAsync" ShowAdminActions="@AuthState.IsAdmin" />
-  }
-}
-
-
-@if (!string.IsNullOrWhiteSpace(
-        selectedProduct))
-{
-  <div class="alert alert-success mt-3">
-
-    Selected product:
-    @selectedProduct
-
-  </div>
-}
-
-
-@if (!isLoading &&
-     totalCount > 0)
-{
-  <div class="mt-4">
-
-    <p>
-      Page @query.Page
-      of @totalPages
-      — Total products:
-      @totalCount
-    </p>
-
-
-    <button class="btn btn-secondary me-2" disabled="@(query.Page <= 1)" @onclick="PreviousPageAsync">
-
-      Previous
-
-    </button>
-
-
-    <button class="btn btn-secondary" disabled="@(query.Page >= totalPages)" @onclick="NextPageAsync">
-
-      Next
-
-    </button>
-
-  </div>
-}
-
-
-@code
-{
-  private List<ProductResponse> products =
-      [];
-
-
-  private List<CategoryResponse> categories =
-      [];
-
+  private List<CategoryResponse> categories = [];
 
   private ProductQueryParameters query =
       new()
       {
         Page = 1,
-        PageSize = 3,
+        PageSize = 6,
         SortDirection = "asc"
       };
-
 
   private string selectedProduct = "";
 
   private string? errorMessage;
 
-
   private bool isLoading = true;
-
 
   private int totalCount;
 
   private int totalPages;
 
-
-  protected override async Task
-      OnInitializedAsync()
+  protected override async Task OnInitializedAsync()
   {
     await LoadCategoriesAsync();
 
     await LoadProductsAsync();
   }
 
-
-  protected override async Task
-      OnAfterRenderAsync(
-          bool firstRender)
+  protected override async Task OnAfterRenderAsync(
+      bool firstRender)
   {
     if (!firstRender)
     {
       return;
     }
 
-
     await AuthState.LoadUserAsync();
-
 
     StateHasChanged();
   }
-
 
   private async Task LoadCategoriesAsync()
   {
     try
     {
       categories =
-          await CategoryApiClient
-              .GetAllAsync();
+          await CategoryApiClient.GetAllAsync();
     }
     catch (HttpRequestException)
     {
       errorMessage =
-          "Could not load categories from the API.";
+          "Could not load categories.";
     }
   }
-
 
   private async Task LoadProductsAsync()
   {
@@ -266,11 +171,8 @@ else
 
       errorMessage = null;
 
-
       PagedResponse<ProductResponse>? response =
-          await ProductApiClient
-              .GetAllAsync(query);
-
+          await ProductApiClient.GetAllAsync(query);
 
       if (response is null)
       {
@@ -283,17 +185,11 @@ else
         return;
       }
 
+      products = response.Items;
 
-      products =
-          response.Items;
+      totalCount = response.TotalCount;
 
-
-      totalCount =
-          response.TotalCount;
-
-
-      totalPages =
-          response.TotalPages;
+      totalPages = response.TotalPages;
     }
     catch (HttpRequestException)
     {
@@ -303,9 +199,8 @@ else
 
       totalPages = 0;
 
-
       errorMessage =
-          "Could not load products from the API.";
+          "Could not load products.";
     }
     finally
     {
@@ -313,6 +208,37 @@ else
     }
   }
 
+  private Task OnSearchChanged(
+      string? value)
+  {
+    query.Search = value;
+
+    return Task.CompletedTask;
+  }
+
+  private Task OnCategoryChanged(
+      int? value)
+  {
+    query.CategoryId = value;
+
+    return Task.CompletedTask;
+  }
+
+  private Task OnSortByChanged(
+      string? value)
+  {
+    query.SortBy = value;
+
+    return Task.CompletedTask;
+  }
+
+  private Task OnSortDirectionChanged(
+      string value)
+  {
+    query.SortDirection = value;
+
+    return Task.CompletedTask;
+  }
 
   private async Task ApplyFiltersAsync()
   {
@@ -321,7 +247,6 @@ else
     await LoadProductsAsync();
   }
 
-
   private async Task PreviousPageAsync()
   {
     if (query.Page <= 1)
@@ -329,13 +254,10 @@ else
       return;
     }
 
-
     query.Page--;
-
 
     await LoadProductsAsync();
   }
-
 
   private async Task NextPageAsync()
   {
@@ -344,13 +266,10 @@ else
       return;
     }
 
-
     query.Page++;
-
 
     await LoadProductsAsync();
   }
-
 
   private void SelectProduct(
       string productName)
@@ -358,7 +277,6 @@ else
     selectedProduct =
         productName;
   }
-
 
   private async Task DeleteProductAsync(
       int productId)
@@ -368,40 +286,25 @@ else
             "confirm",
             "Are you sure you want to delete this product?");
 
-
     if (!confirmed)
     {
       return;
     }
 
-
     try
     {
       errorMessage = null;
 
-
       HttpResponseMessage response =
-          await ProductApiClient
-              .DeleteAsync(productId);
-
+          await ProductApiClient.DeleteAsync(
+              productId);
 
       if (response.IsSuccessStatusCode)
       {
-        products.RemoveAll(
-            product =>
-                product.Id ==
-                productId);
-
-
-        if (totalCount > 0)
-        {
-          totalCount--;
-        }
-
+        await LoadProductsAsync();
 
         return;
       }
-
 
       if (response.StatusCode ==
           System.Net.HttpStatusCode.Unauthorized)
@@ -412,16 +315,14 @@ else
         return;
       }
 
-
       if (response.StatusCode ==
           System.Net.HttpStatusCode.Forbidden)
       {
         errorMessage =
-            "You do not have permission to delete products.";
+            "You do not have permission.";
 
         return;
       }
-
 
       if (response.StatusCode ==
           System.Net.HttpStatusCode.NotFound)
@@ -432,9 +333,8 @@ else
         return;
       }
 
-
       errorMessage =
-          $"Could not delete product. Status: {(int)response.StatusCode}";
+          $"Delete failed. Status: {(int)response.StatusCode}";
     }
     catch (HttpRequestException)
     {

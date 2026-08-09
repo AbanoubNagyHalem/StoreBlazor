@@ -1,0 +1,61 @@
+@if (TotalCount > 0)
+{
+  <div class="pagination-container">
+
+    <div class="pagination-info">
+      Page
+      <strong>@CurrentPage</strong>
+      of
+      <strong>@TotalPages</strong>
+
+      <span class="text-muted ms-2">
+        (@TotalCount products)
+      </span>
+    </div>
+
+    <div class="pagination-actions">
+
+      <button type="button" class="btn btn-outline-secondary" disabled="@(CurrentPage <= 1)" @onclick="PreviousAsync">
+
+        Previous
+
+      </button>
+
+      <button type="button" class="btn btn-outline-secondary" disabled="@(CurrentPage >= TotalPages)"
+              @onclick="NextAsync">
+
+        Next
+
+      </button>
+
+    </div>
+
+  </div>
+}
+
+@code {
+  [Parameter]
+  public int CurrentPage { get; set; }
+
+  [Parameter]
+  public int TotalPages { get; set; }
+
+  [Parameter]
+  public int TotalCount { get; set; }
+
+  [Parameter]
+  public EventCallback OnPrevious { get; set; }
+
+  [Parameter]
+  public EventCallback OnNext { get; set; }
+
+  private async Task PreviousAsync()
+  {
+    await OnPrevious.InvokeAsync();
+  }
+
+  private async Task NextAsync()
+  {
+    await OnNext.InvokeAsync();
+  }
+}

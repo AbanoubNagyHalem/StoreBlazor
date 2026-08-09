@@ -1,81 +1,80 @@
-<div class="card mb-3">
+<div class="product-card">
 
-  <div class="card-body">
+  <div class="product-card-content">
 
-    <h5 class="card-title">
-      @Name
-    </h5>
+    <div class="product-header">
 
-    <p class="card-text">
-      Price: @Price
-    </p>
+      <div>
+        <span class="category-badge">
+          @CategoryName
+        </span>
 
-    <p class="card-text">
-      Category: @CategoryName
-    </p>
+        <h3 class="product-name">
+          @Name
+        </h3>
+      </div>
 
-    <button class="btn btn-primary" @onclick="HandleSelectAsync">
+      <div class="product-price">
+        @Price.ToString("N2")
+      </div>
 
-      Select
+    </div>
 
-    </button>
+    <div class="product-actions">
 
+      <button type="button" class="btn btn-outline-primary" @onclick="HandleSelectAsync">
 
-    @if (ShowAdminActions)
-    {
-      <a class="btn btn-warning ms-2" href="@($"products/edit/{Id}")">
-
-        Edit
-
-      </a>
-
-      <button class="btn btn-danger ms-2" @onclick="HandleDeleteAsync">
-
-        Delete
+        Select
 
       </button>
-    }
+
+      @if (ShowAdminActions)
+      {
+        <a class="btn btn-outline-warning" href="@($"products/edit/{Id}")">
+
+          Edit
+
+        </a>
+
+        <button type="button" class="btn btn-outline-danger" @onclick="HandleDeleteAsync">
+
+          Delete
+
+        </button>
+      }
+
+    </div>
 
   </div>
 
 </div>
 
-
-@code
-{
+@code {
   [Parameter]
   public int Id { get; set; }
-
 
   [Parameter]
   public string Name { get; set; } = "";
 
-
   [Parameter]
   public decimal Price { get; set; }
-
 
   [Parameter]
   public string CategoryName { get; set; } = "";
 
-
   [Parameter]
   public bool ShowAdminActions { get; set; }
-
 
   [Parameter]
   public EventCallback<string> OnSelected { get; set; }
 
-
   [Parameter]
   public EventCallback<int> OnDelete { get; set; }
-
 
   private async Task HandleSelectAsync()
   {
     await OnSelected.InvokeAsync(Name);
   }
-
 
   private async Task HandleDeleteAsync()
   {

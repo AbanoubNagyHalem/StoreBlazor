@@ -1,0 +1,140 @@
+<div class="filter-panel">
+
+  <div class="row g-3">
+
+    <div class="col-lg-4 col-md-6">
+      <label class="form-label">Search</label>
+
+      <input class="form-control" placeholder="Search products..." value="@Search" @oninput="HandleSearchInput" />
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+      <label class="form-label">Category</label>
+
+      <select class="form-select" value="@CategoryId" @onchange="HandleCategoryChanged">
+
+        <option value="">
+          All Categories
+        </option>
+
+        @foreach (var category in Categories)
+        {
+          <option value="@category.Id">
+            @category.Name
+          </option>
+        }
+
+      </select>
+    </div>
+
+    <div class="col-lg-2 col-md-4">
+      <label class="form-label">Sort By</label>
+
+      <select class="form-select" value="@SortBy" @onchange="HandleSortByChanged">
+
+        <option value="">Default</option>
+        <option value="name">Name</option>
+        <option value="price">Price</option>
+        <option value="id">Newest</option>
+
+      </select>
+    </div>
+
+    <div class="col-lg-2 col-md-4">
+      <label class="form-label">Direction</label>
+
+      <select class="form-select" value="@SortDirection" @onchange="HandleDirectionChanged">
+
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+
+      </select>
+    </div>
+
+    <div class="col-lg-1 col-md-4 d-flex align-items-end">
+      <button type="button" class="btn btn-dark w-100" @onclick="ApplyAsync">
+
+        Apply
+
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+@code {
+  [Parameter]
+  public string? Search { get; set; }
+
+  [Parameter]
+  public int? CategoryId { get; set; }
+
+  [Parameter]
+  public string? SortBy { get; set; }
+
+  [Parameter]
+  public string SortDirection { get; set; } = "asc";
+
+  [Parameter]
+  public List<CategoryResponse> Categories { get; set; } = [];
+
+  [Parameter]
+  public EventCallback<string?> SearchChanged { get; set; }
+
+  [Parameter]
+  public EventCallback<int?> CategoryIdChanged { get; set; }
+
+  [Parameter]
+  public EventCallback<string?> SortByChanged { get; set; }
+
+  [Parameter]
+  public EventCallback<string> SortDirectionChanged { get; set; }
+
+  [Parameter]
+  public EventCallback OnApply { get; set; }
+
+  private async Task HandleSearchInput(ChangeEventArgs args)
+  {
+    Search = args.Value?.ToString();
+
+    await SearchChanged.InvokeAsync(Search);
+  }
+
+  private async Task HandleCategoryChanged(ChangeEventArgs args)
+  {
+    string? value = args.Value?.ToString();
+
+    if (int.TryParse(value, out int categoryId))
+    {
+      CategoryId = categoryId;
+    }
+    else
+    {
+      CategoryId = null;
+    }
+
+    await CategoryIdChanged.InvokeAsync(CategoryId);
+  }
+
+  private async Task HandleSortByChanged(ChangeEventArgs args)
+  {
+    SortBy = args.Value?.ToString();
+
+    await SortByChanged.InvokeAsync(SortBy);
+  }
+
+  private async Task HandleDirectionChanged(ChangeEventArgs args)
+  {
+    SortDirection =
+        args.Value?.ToString() ?? "asc";
+
+    await SortDirectionChanged.InvokeAsync(
+        SortDirection);
+  }
+
+  private async Task ApplyAsync()
+  {
+    await OnApply.InvokeAsync();
+  }
+}

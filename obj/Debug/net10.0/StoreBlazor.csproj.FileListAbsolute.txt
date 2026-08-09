@@ -81,6 +81,10 @@ C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\refint\StoreBla
 C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\StoreBlazor.pdb
 C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\StoreBlazor.genruntimeconfig.cache
 C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\ref\StoreBlazor.dll
-C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\compressed\i7z3clkrst-{0}-fg7cpf607k-fg7cpf607k.gz
-C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\compressed\5quv9kckcn-{0}-fg7cpf607k-fg7cpf607k.gz
 C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\StoreBlazor.sourcelink.json
+C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\scopedcss\Components\Pages\Products.razor.rz.scp.css
+C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\scopedcss\Components\Shared\ProductCard.razor.rz.scp.css
+C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\scopedcss\Components\Shared\ProductFilters.razor.rz.scp.css
+C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\scopedcss\Components\Shared\ProductPagination.razor.rz.scp.css
+C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\compressed\i7z3clkrst-{0}-w3t19ea1wn-w3t19ea1wn.gz
+C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\compressed\5quv9kckcn-{0}-w3t19ea1wn-w3t19ea1wn.gz
