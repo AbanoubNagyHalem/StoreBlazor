@@ -3,115 +3,119 @@
 
 @inject AuthApiClient AuthApiClient
 @inject AuthStateService AuthState
+@inject NavigationManager Navigation
 
 <PageTitle>Login</PageTitle>
 
-<h1>Login</h1>
+<div class="auth-page">
 
+  <div class="auth-card">
 
-@if (errorMessage is not null)
-{
-  <div class="alert alert-danger">
-    @errorMessage
-  </div>
-}
+    <div class="auth-header">
 
+      <div class="auth-icon">
+        🔐
+      </div>
 
-@if (loginSucceeded)
-{
-  <div class="alert alert-success">
-    Login successful.
-  </div>
-
-  <div class="card mb-3">
-
-    <div class="card-body">
+      <h1>Welcome back</h1>
 
       <p>
-        <strong>Name:</strong>
-        @AuthState.Name
-      </p>
-
-      <p>
-        <strong>Email:</strong>
-        @AuthState.Email
-      </p>
-
-      <p>
-        <strong>Role:</strong>
-        @AuthState.Role
+        Sign in to manage your store.
       </p>
 
     </div>
 
-  </div>
-}
 
-
-<EditForm Model="model" OnValidSubmit="HandleLoginAsync">
-
-  <DataAnnotationsValidator />
-
-  <ValidationSummary />
-
-
-  <div class="mb-3">
-
-    <label class="form-label">
-      Email
-    </label>
-
-    <InputText class="form-control" @bind-Value="model.Email" />
-
-    <ValidationMessage For="@(() => model.Email)" />
-
-  </div>
-
-
-  <div class="mb-3">
-
-    <label class="form-label">
-      Password
-    </label>
-
-    <InputText class="form-control" type="password" @bind-Value="model.Password" />
-
-    <ValidationMessage For="@(() => model.Password)" />
-
-  </div>
-
-
-  <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
-
-    @if (isSubmitting)
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
     {
-      <span>
-        Logging in...
-      </span>
-    }
-    else
-    {
-      <span>
-        Login
-      </span>
+      <div class="alert alert-danger">
+        @errorMessage
+      </div>
     }
 
-  </button>
 
-</EditForm>
+    <EditForm Model="@model" OnValidSubmit="HandleLoginAsync">
+
+      <DataAnnotationsValidator />
+
+      <div class="mb-3">
+
+        <label class="form-label">
+          Email
+        </label>
+
+        <InputText class="form-control" @bind-Value="model.Email" placeholder="you@example.com" />
+
+        <ValidationMessage For="@(() => model.Email)" />
+
+      </div>
 
 
-@code
-{
-  private LoginRequest model =
+      <div class="mb-4">
+
+        <label class="form-label">
+          Password
+        </label>
+
+        <InputText type="password" class="form-control" @bind-Value="model.Password"
+                   placeholder="Enter your password" />
+
+        <ValidationMessage For="@(() => model.Password)" />
+
+      </div>
+
+
+      <button type="submit" class="btn btn-dark w-100 login-button" disabled="@isSubmitting">
+
+        @if (isSubmitting)
+        {
+          <span class="spinner-border spinner-border-sm me-2" aria-hidden="true">
+          </span>
+
+          <span>
+            Signing in...
+          </span>
+        }
+        else
+        {
+          <span>
+            Sign In
+          </span>
+        }
+
+      </button>
+
+    </EditForm>
+
+
+    <div class="auth-footer">
+
+      <span>
+        Store Management
+      </span>
+
+      <span class="separator">
+        •
+      </span>
+
+      <span>
+        Secure Login
+      </span>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+@code {
+  private readonly LoginRequest model =
       new();
-
 
   private string? errorMessage;
 
   private bool isSubmitting;
-
-  private bool loginSucceeded;
 
 
   private async Task HandleLoginAsync()
@@ -122,12 +126,10 @@
 
       errorMessage = null;
 
-      loginSucceeded = false;
-
 
       AuthResponse? response =
-          await AuthApiClient
-              .LoginAsync(model);
+          await AuthApiClient.LoginAsync(
+              model);
 
 
       if (response is null)
@@ -139,18 +141,12 @@
       }
 
 
-      await AuthState
-          .SetUserAsync(response);
+      await AuthState.SetUserAsync(
+          response);
 
 
-      loginSucceeded = true;
-
-
-      Console.WriteLine(
-          $"Login Token Exists: {!string.IsNullOrWhiteSpace(AuthState.Token)}");
-
-      Console.WriteLine(
-          $"Logged User Role: {AuthState.Role}");
+      Navigation.NavigateTo(
+          "/products");
     }
     catch (HttpRequestException)
     {

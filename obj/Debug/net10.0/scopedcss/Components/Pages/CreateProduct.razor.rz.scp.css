@@ -1,0 +1,44 @@
+.form-page[b-fg9qlfq9d7] {
+  max-width: 760px;
+}
+
+.form-page-header[b-fg9qlfq9d7] {
+  margin-bottom: 1.5rem;
+}
+
+.page-eyebrow[b-fg9qlfq9d7] {
+  display: block;
+
+  margin-bottom: 0.35rem;
+
+  color: #6b7280;
+
+  font-size: 0.72rem;
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+}
+
+.form-page-header h1[b-fg9qlfq9d7] {
+  margin-bottom: 0.35rem;
+}
+
+.form-page-header p[b-fg9qlfq9d7] {
+  margin: 0;
+
+  color: #6b7280;
+}
+
+.loading-box[b-fg9qlfq9d7] {
+  display: flex;
+  align-items: center;
+
+  gap: 0.75rem;
+
+  padding: 2rem;
+
+  background: white;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+}

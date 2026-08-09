@@ -8,28 +8,35 @@
 
 <PageTitle>Edit Product</PageTitle>
 
-<h1>Edit Product</h1>
 
-@if (isLoading)
-{
-  <div class="alert alert-info">
-    Loading product...
+<div class="form-page">
+
+  <div class="form-page-header">
+
+    <div>
+      <span class="page-eyebrow">
+        PRODUCTS
+      </span>
+
+      <h1>
+        Edit Product
+      </h1>
+
+      <p>
+        Update product information.
+      </p>
+    </div>
+
   </div>
-}
-else if (notFound)
-{
-  <div class="alert alert-warning">
-    Product not found.
-  </div>
-}
-else
-{
+
+
   @if (successMessage is not null)
   {
     <div class="alert alert-success">
       @successMessage
     </div>
   }
+
 
   @if (errorMessage is not null)
   {
@@ -38,84 +45,40 @@ else
     </div>
   }
 
-  <EditForm Model="model" OnValidSubmit="HandleUpdateAsync">
 
-    <DataAnnotationsValidator />
+  @if (isLoading)
+  {
+    <div class="loading-box">
 
-    <ValidationSummary />
+      <div class="spinner-border"></div>
 
-    <div class="mb-3">
-      <label class="form-label">
-        Name
-      </label>
+      <span>
+        Loading product...
+      </span>
 
-      <InputText class="form-control" @bind-Value="model.Name" />
-
-      <ValidationMessage For="@(() => model.Name)" />
     </div>
-
-    <div class="mb-3">
-      <label class="form-label">
-        Price
-      </label>
-
-      <InputNumber class="form-control" @bind-Value="model.Price" />
-
-      <ValidationMessage For="@(() => model.Price)" />
+  }
+  else if (notFound)
+  {
+    <div class="alert alert-warning">
+      Product not found.
     </div>
+  }
+  else
+  {
+    <ProductForm Model="@model" Categories="@categories" IsSubmitting="@isSubmitting" SubmitText="Save Changes"
+                 SubmittingText="Saving..." ShowCancel="true" OnValidSubmit="HandleUpdateAsync" OnCancel="GoBack" />
+  }
 
-    <div class="mb-3">
-      <label class="form-label">
-        Category
-      </label>
+</div>
 
-      <InputSelect class="form-select" @bind-Value="model.CategoryId">
 
-        <option value="0">
-          Select category
-        </option>
-
-        @foreach (var category in categories)
-        {
-          <option value="@category.Id">
-            @category.Name
-          </option>
-        }
-
-      </InputSelect>
-
-      <ValidationMessage For="@(() => model.CategoryId)" />
-    </div>
-
-    <button type="submit" class="btn btn-primary me-2" disabled="@isSubmitting">
-
-      @if (isSubmitting)
-      {
-        <span>Saving...</span>
-      }
-      else
-      {
-        <span>Save Changes</span>
-      }
-
-    </button>
-
-    <button type="button" class="btn btn-secondary" @onclick="GoBack">
-
-      Cancel
-
-    </button>
-
-  </EditForm>
-}
-
-@code
-{
+@code {
   [Parameter]
   public int Id { get; set; }
 
 
-  private UpdateProductRequest model =
+  private ProductFormModel model =
       new();
 
 
@@ -135,9 +98,8 @@ else
   private string? errorMessage;
 
 
-  protected override async Task
-      OnAfterRenderAsync(
-          bool firstRender)
+  protected override async Task OnAfterRenderAsync(
+      bool firstRender)
   {
     if (!firstRender)
     {
@@ -148,22 +110,14 @@ else
     {
       await AuthState.LoadUserAsync();
 
-      if (!AuthState.IsAuthenticated)
-      {
-        errorMessage =
-            "You must login first.";
-
-        return;
-      }
 
       categories =
-          await CategoryApiClient
-              .GetAllAsync();
+          await CategoryApiClient.GetAllAsync();
 
 
       ProductResponse? product =
-          await ProductApiClient
-              .GetByIdAsync(Id);
+          await ProductApiClient.GetByIdAsync(
+              Id);
 
 
       if (product is null)
@@ -174,13 +128,13 @@ else
       }
 
 
-      model = new UpdateProductRequest
-      {
-        Name = product.Name,
-        Price = product.Price,
-        CategoryId =
-              product.CategoryId
-      };
+      model =
+          new ProductFormModel
+          {
+            Name = product.Name,
+            Price = product.Price,
+            CategoryId = product.CategoryId
+          };
     }
     catch (HttpRequestException)
     {
@@ -207,11 +161,19 @@ else
       errorMessage = null;
 
 
+      UpdateProductRequest request =
+          new()
+          {
+            Name = model.Name,
+            Price = model.Price,
+            CategoryId = model.CategoryId
+          };
+
+
       HttpResponseMessage response =
-          await ProductApiClient
-              .UpdateAsync(
-                  Id,
-                  model);
+          await ProductApiClient.UpdateAsync(
+              Id,
+              request);
 
 
       if (response.IsSuccessStatusCode)

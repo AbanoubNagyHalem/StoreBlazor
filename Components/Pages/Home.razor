@@ -1,7 +1,236 @@
 ﻿@page "/"
+@rendermode InteractiveServer
 
-<PageTitle>Home</PageTitle>
+@inject ProductApiClient ProductApiClient
+@inject CategoryApiClient CategoryApiClient
 
-<h1>Hello, world!</h1>
+<PageTitle>Dashboard</PageTitle>
 
-Welcome to your new app.
+<div class="dashboard-page">
+
+  <div class="dashboard-header">
+    <div>
+      <span class="page-eyebrow">
+        OVERVIEW
+      </span>
+
+      <h1>
+        Store Dashboard
+      </h1>
+
+      <p>
+        Quick overview of your store data.
+      </p>
+    </div>
+  </div>
+
+
+  @if (isLoading)
+  {
+    <div class="dashboard-loading">
+
+      <div class="spinner-border"></div>
+
+      <span>
+        Loading dashboard...
+      </span>
+
+    </div>
+  }
+  else if (errorMessage is not null)
+  {
+    <div class="alert alert-danger">
+      @errorMessage
+    </div>
+  }
+  else
+  {
+    <div class="stats-grid">
+
+      <div class="stat-card">
+
+        <div class="stat-icon">
+          📦
+        </div>
+
+        <div class="stat-content">
+
+          <div class="stat-label">
+            Products
+          </div>
+
+          <div class="stat-value">
+            @totalProducts
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <div class="stat-icon">
+          🗂️
+        </div>
+
+        <div class="stat-content">
+
+          <div class="stat-label">
+            Categories
+          </div>
+
+          <div class="stat-value">
+            @totalCategories
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <div class="stat-icon">
+          💰
+        </div>
+
+        <div class="stat-content">
+
+          <div class="stat-label">
+            Most Expensive Product
+          </div>
+
+          <div class="stat-value stat-value-small">
+            @mostExpensiveProduct
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="quick-actions">
+
+      <h2>
+        Quick Actions
+      </h2>
+
+
+      <div class="quick-actions-grid">
+
+        <a href="/products" class="quick-action-card">
+
+          <span class="quick-action-icon">
+            📦
+          </span>
+
+          <div>
+
+            <strong>
+              Browse Products
+            </strong>
+
+            <p>
+              Search, filter and manage products.
+            </p>
+
+          </div>
+
+        </a>
+
+
+        <a href="/products/create" class="quick-action-card">
+
+          <span class="quick-action-icon">
+            ➕
+          </span>
+
+          <div>
+
+            <strong>
+              Add Product
+            </strong>
+
+            <p>
+              Create a new product.
+            </p>
+
+          </div>
+
+        </a>
+
+      </div>
+
+    </div>
+  }
+
+</div>
+
+
+@code {
+  private bool isLoading = true;
+
+  private string? errorMessage;
+
+  private int totalProducts;
+
+  private int totalCategories;
+
+  private string mostExpensiveProduct = "N/A";
+
+
+  protected override async Task OnInitializedAsync()
+  {
+    try
+    {
+      ProductQueryParameters query =
+          new()
+          {
+            Page = 1,
+            PageSize = 100,
+            SortBy = "price",
+            SortDirection = "desc"
+          };
+
+
+      PagedResponse<ProductResponse>? productsResponse =
+          await ProductApiClient.GetAllAsync(
+              query);
+
+
+      List<CategoryResponse> categories =
+          await CategoryApiClient.GetAllAsync();
+
+
+      totalProducts =
+          productsResponse?.TotalCount ?? 0;
+
+
+      totalCategories =
+          categories.Count;
+
+
+      ProductResponse? highest =
+          productsResponse?.Items.FirstOrDefault();
+
+
+      if (highest is not null)
+      {
+        mostExpensiveProduct =
+            $"{highest.Name} - {highest.Price:N2}";
+      }
+    }
+    catch (HttpRequestException)
+    {
+      errorMessage =
+          "Could not load dashboard data.";
+    }
+    finally
+    {
+      isLoading = false;
+    }
+  }
+}
