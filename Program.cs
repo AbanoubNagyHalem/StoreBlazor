@@ -2,20 +2,34 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using StoreBlazor.Components;
 using StoreBlazor.Services;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder =
+    WebApplication.CreateBuilder(args);
 
 builder.Services
     .AddRazorComponents()
     .AddInteractiveServerComponents();
+
 
 string apiBaseUrl =
     builder.Configuration["ApiSettings:BaseUrl"]
     ?? throw new InvalidOperationException(
         "ApiSettings:BaseUrl is missing.");
 
-builder.Services.AddScoped<AuthStateService>();
 
-builder.Services.AddScoped<ProtectedSessionStorage>();
+// ========================
+// Authentication state
+// ========================
+
+builder.Services.AddScoped<
+    ProtectedSessionStorage>();
+
+builder.Services.AddScoped<
+    AuthStateService>();
+
+
+// ========================
+// HTTP infrastructure
+// ========================
 
 builder.Services.AddHttpClient(
     "StoreApi",
@@ -25,13 +39,27 @@ builder.Services.AddHttpClient(
             new Uri(apiBaseUrl);
     });
 
-builder.Services.AddScoped<AuthApiClient>();
+builder.Services.AddScoped<
+    ApiRequestFactory>();
 
-builder.Services.AddScoped<ProductApiClient>();
 
-builder.Services.AddScoped<CategoryApiClient>();
+// ========================
+// API Clients
+// ========================
 
-var app = builder.Build();
+builder.Services.AddScoped<
+    AuthApiClient>();
+
+builder.Services.AddScoped<
+    ProductApiClient>();
+
+builder.Services.AddScoped<
+    CategoryApiClient>();
+
+
+var app =
+    builder.Build();
+
 
 if (!app.Environment.IsDevelopment())
 {
@@ -41,6 +69,7 @@ if (!app.Environment.IsDevelopment())
 
     app.UseHsts();
 }
+
 
 app.UseStatusCodePagesWithReExecute(
     "/not-found",

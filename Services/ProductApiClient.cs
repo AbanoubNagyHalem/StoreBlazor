@@ -1,4 +1,3 @@
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using StoreBlazor.Models;
 
@@ -6,23 +5,35 @@ namespace StoreBlazor.Services;
 
 public class ProductApiClient
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly AuthStateService _authState;
+    private readonly IHttpClientFactory
+        _httpClientFactory;
+
+    private readonly ApiRequestFactory
+        _requestFactory;
+
 
     public ProductApiClient(
         IHttpClientFactory httpClientFactory,
-        AuthStateService authState)
+        ApiRequestFactory requestFactory)
     {
-        _httpClientFactory = httpClientFactory;
-        _authState = authState;
+        _httpClientFactory =
+            httpClientFactory;
+
+        _requestFactory =
+            requestFactory;
     }
 
-    public async Task<PagedResponse<ProductResponse>?> GetAllAsync(
-        ProductQueryParameters parameters,
-        CancellationToken cancellationToken = default)
+
+    public async Task<
+        PagedResponse<ProductResponse>?>
+        GetAllAsync(
+            ProductQueryParameters parameters,
+            CancellationToken cancellationToken = default)
     {
         HttpClient httpClient =
-            _httpClientFactory.CreateClient("StoreApi");
+            _httpClientFactory.CreateClient(
+                "StoreApi");
+
 
         string url =
             $"api/products" +
@@ -32,29 +43,37 @@ public class ProductApiClient
             $"&sortBy={parameters.SortBy ?? ""}" +
             $"&sortDirection={parameters.SortDirection}";
 
+
         if (parameters.CategoryId.HasValue)
         {
             url +=
                 $"&categoryId={parameters.CategoryId.Value}";
         }
 
+
         return await httpClient
-            .GetFromJsonAsync<PagedResponse<ProductResponse>>(
+            .GetFromJsonAsync<
+                PagedResponse<ProductResponse>>(
                 url,
                 cancellationToken);
     }
 
-    public async Task<ProductResponse?> GetByIdAsync(
-        int id,
-        CancellationToken cancellationToken = default)
+
+    public async Task<ProductResponse?>
+        GetByIdAsync(
+            int id,
+            CancellationToken cancellationToken = default)
     {
         HttpClient httpClient =
-            _httpClientFactory.CreateClient("StoreApi");
+            _httpClientFactory.CreateClient(
+                "StoreApi");
+
 
         HttpResponseMessage response =
             await httpClient.GetAsync(
                 $"api/products/{id}",
                 cancellationToken);
+
 
         if (response.StatusCode ==
             System.Net.HttpStatusCode.NotFound)
@@ -62,89 +81,84 @@ public class ProductApiClient
             return null;
         }
 
+
         response.EnsureSuccessStatusCode();
+
 
         return await response.Content
             .ReadFromJsonAsync<ProductResponse>(
                 cancellationToken);
     }
 
-    public async Task<HttpResponseMessage> CreateAsync(
-        CreateProductRequest request,
-        CancellationToken cancellationToken = default)
+
+    public async Task<HttpResponseMessage>
+        CreateAsync(
+            CreateProductRequest request,
+            CancellationToken cancellationToken = default)
     {
         HttpClient httpClient =
-            _httpClientFactory.CreateClient("StoreApi");
+            _httpClientFactory.CreateClient(
+                "StoreApi");
+
 
         using HttpRequestMessage httpRequest =
-            new(
+            _requestFactory.Create(
                 HttpMethod.Post,
-                "api/products");
+                "api/products",
+                JsonContent.Create(request),
+                requiresAuthentication: true);
 
-        httpRequest.Content =
-            JsonContent.Create(request);
-
-        AddAuthorizationHeader(httpRequest);
 
         return await httpClient.SendAsync(
             httpRequest,
             cancellationToken);
     }
 
-    public async Task<HttpResponseMessage> UpdateAsync(
-        int id,
-        UpdateProductRequest request,
-        CancellationToken cancellationToken = default)
+
+    public async Task<HttpResponseMessage>
+        UpdateAsync(
+            int id,
+            UpdateProductRequest request,
+            CancellationToken cancellationToken = default)
     {
         HttpClient httpClient =
-            _httpClientFactory.CreateClient("StoreApi");
+            _httpClientFactory.CreateClient(
+                "StoreApi");
+
 
         using HttpRequestMessage httpRequest =
-            new(
+            _requestFactory.Create(
                 HttpMethod.Put,
-                $"api/products/{id}");
+                $"api/products/{id}",
+                JsonContent.Create(request),
+                requiresAuthentication: true);
 
-        httpRequest.Content =
-            JsonContent.Create(request);
-
-        AddAuthorizationHeader(httpRequest);
 
         return await httpClient.SendAsync(
             httpRequest,
             cancellationToken);
     }
 
-    public async Task<HttpResponseMessage> DeleteAsync(
-        int id,
-        CancellationToken cancellationToken = default)
+
+    public async Task<HttpResponseMessage>
+        DeleteAsync(
+            int id,
+            CancellationToken cancellationToken = default)
     {
         HttpClient httpClient =
-            _httpClientFactory.CreateClient("StoreApi");
+            _httpClientFactory.CreateClient(
+                "StoreApi");
+
 
         using HttpRequestMessage httpRequest =
-            new(
+            _requestFactory.Create(
                 HttpMethod.Delete,
-                $"api/products/{id}");
+                $"api/products/{id}",
+                requiresAuthentication: true);
 
-        AddAuthorizationHeader(httpRequest);
 
         return await httpClient.SendAsync(
             httpRequest,
             cancellationToken);
-    }
-
-    private void AddAuthorizationHeader(
-        HttpRequestMessage request)
-    {
-        if (string.IsNullOrWhiteSpace(
-                _authState.Token))
-        {
-            return;
-        }
-
-        request.Headers.Authorization =
-            new AuthenticationHeaderValue(
-                "Bearer",
-                _authState.Token);
     }
 }

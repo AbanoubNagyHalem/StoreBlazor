@@ -6,14 +6,26 @@
 @inject NavigationManager Navigation
 
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
+<div class="sidebar-brand">
 
-        <a class="navbar-brand" href="">
-            StoreBlazor
-        </a>
+    <a href="/" class="brand-link">
 
-    </div>
+        <span class="brand-icon">
+            S
+        </span>
+
+        <div>
+            <div class="brand-name">
+                Store
+            </div>
+
+            <div class="brand-subtitle">
+                Management
+            </div>
+        </div>
+
+    </a>
+
 </div>
 
 
@@ -22,27 +34,61 @@
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
 
-    <nav class="flex-column">
+    <nav class="sidebar-nav">
 
-        <div class="nav-item px-3">
-
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-
-                Home
-
-            </NavLink>
-
+        <div class="nav-section-title">
+            STORE
         </div>
 
 
-        <div class="nav-item px-3">
+        <NavLink class="sidebar-link" href="" Match="NavLinkMatch.All">
 
-            <NavLink class="nav-link" href="products">
+            <span class="sidebar-icon">
+                🏠
+            </span>
 
+            <span>
+                Home
+            </span>
+
+        </NavLink>
+
+
+        <NavLink class="sidebar-link" href="products">
+
+            <span class="sidebar-icon">
+                📦
+            </span>
+
+            <span>
                 Products
+            </span>
+
+        </NavLink>
+
+
+        @if (isLoaded &&
+             AuthState.IsAdmin)
+        {
+            <NavLink class="sidebar-link" href="products/create">
+
+                <span class="sidebar-icon">
+                    ➕
+                </span>
+
+                <span>
+                    Add Product
+                </span>
 
             </NavLink>
+        }
 
+
+        <div class="nav-divider"></div>
+
+
+        <div class="nav-section-title">
+            ACCOUNT
         </div>
 
 
@@ -50,52 +96,52 @@
         {
             @if (!AuthState.IsAuthenticated)
             {
-                <div class="nav-item px-3">
+                <NavLink class="sidebar-link" href="login">
 
-                    <NavLink class="nav-link" href="login">
+                    <span class="sidebar-icon">
+                        🔐
+                    </span>
 
+                    <span>
                         Login
+                    </span>
 
-                    </NavLink>
-
-                </div>
+                </NavLink>
             }
             else
             {
-                @if (AuthState.IsAdmin)
-                {
-                    <div class="nav-item px-3">
+                <div class="user-card">
 
-                        <NavLink class="nav-link" href="products/create">
+                    <div class="user-avatar">
+                        @GetInitial()
+                    </div>
 
-                            Create Product
+                    <div class="user-info">
 
-                        </NavLink>
+                        <div class="user-name">
+                            @AuthState.Name
+                        </div>
+
+                        <div class="user-role">
+                            @AuthState.Role
+                        </div>
 
                     </div>
-                }
+
+                </div>
 
 
-                <div class="nav-item px-3">
+                <button type="button" class="sidebar-link logout-button" @onclick="LogoutAsync">
 
-                    <span class="nav-link">
-
-                        Hello, @AuthState.Name
-
+                    <span class="sidebar-icon">
+                        ↪
                     </span>
 
-                </div>
-
-
-                <div class="nav-item px-3">
-
-                    <button class="nav-link" @onclick="LogoutAsync">
-
+                    <span>
                         Logout
+                    </span>
 
-                    </button>
-
-                </div>
+                </button>
             }
         }
 
@@ -104,13 +150,13 @@
 </div>
 
 
-@code
-{
+@code {
     private bool isLoaded;
 
 
-    protected override async Task OnAfterRenderAsync(
-        bool firstRender)
+    protected override async Task
+        OnAfterRenderAsync(
+            bool firstRender)
     {
         if (!firstRender)
         {
@@ -136,6 +182,22 @@
     {
         InvokeAsync(
             StateHasChanged);
+    }
+
+
+    private string GetInitial()
+    {
+        if (string.IsNullOrWhiteSpace(
+                AuthState.Name))
+        {
+            return "?";
+        }
+
+
+        return AuthState.Name
+            .Trim()[0]
+            .ToString()
+            .ToUpperInvariant();
     }
 
 

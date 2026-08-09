@@ -86,5 +86,5 @@ C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\scopedcss\Compo
 C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\scopedcss\Components\Shared\ProductCard.razor.rz.scp.css
 C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\scopedcss\Components\Shared\ProductFilters.razor.rz.scp.css
 C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\scopedcss\Components\Shared\ProductPagination.razor.rz.scp.css
-C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\compressed\i7z3clkrst-{0}-w3t19ea1wn-w3t19ea1wn.gz
-C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\compressed\5quv9kckcn-{0}-w3t19ea1wn-w3t19ea1wn.gz
+C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\compressed\i7z3clkrst-{0}-84kplb0fwt-84kplb0fwt.gz
+C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\compressed\5quv9kckcn-{0}-84kplb0fwt-84kplb0fwt.gz
