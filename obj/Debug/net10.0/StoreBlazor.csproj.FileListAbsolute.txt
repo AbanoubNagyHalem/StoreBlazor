@@ -91,5 +91,7 @@ C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\scopedcss\Compo
 C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\scopedcss\Components\Pages\EditProduct.razor.rz.scp.css
 C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\scopedcss\Components\Shared\ProductForm.razor.rz.scp.css
 C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\scopedcss\Components\Pages\Home.razor.rz.scp.css
-C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\compressed\i7z3clkrst-{0}-96c4hnpe4k-96c4hnpe4k.gz
-C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\compressed\5quv9kckcn-{0}-96c4hnpe4k-96c4hnpe4k.gz
+C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\scopedcss\Components\Pages\Categories.razor.rz.scp.css
+C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\scopedcss\Components\Pages\CreateCategory.razor.rz.scp.css
+C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\compressed\i7z3clkrst-{0}-pmca8crcqm-pmca8crcqm.gz
+C:\Users\abano\OneDrive\Desktop\C#\StoreBlazor\obj\Debug\net10.0\compressed\5quv9kckcn-{0}-pmca8crcqm-pmca8crcqm.gz

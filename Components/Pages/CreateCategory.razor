@@ -1,0 +1,258 @@
+@page "/categories/create"
+@rendermode InteractiveServer
+
+@inject CategoryApiClient CategoryApiClient
+@inject AuthStateService AuthState
+@inject NavigationManager Navigation
+
+<PageTitle>Create Category</PageTitle>
+
+
+<div class="form-page">
+
+  <div class="form-page-header">
+
+    <div>
+
+      <span class="page-eyebrow">
+        CATEGORIES
+      </span>
+
+      <h1>
+        Create Category
+      </h1>
+
+      <p>
+        Add a new category to organize your products.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  @if (successMessage is not null)
+  {
+    <div class="alert alert-success">
+      @successMessage
+    </div>
+  }
+
+
+  @if (errorMessage is not null)
+  {
+    <div class="alert alert-danger">
+      @errorMessage
+    </div>
+  }
+
+
+  @if (isLoading)
+  {
+    <div class="loading-box">
+
+      <div class="spinner-border"></div>
+
+      <span>
+        Loading form...
+      </span>
+
+    </div>
+  }
+  else
+  {
+    <div class="category-form">
+
+      <EditForm Model="@model" OnValidSubmit="HandleCreateAsync">
+
+        <DataAnnotationsValidator />
+
+        <ValidationSummary />
+
+
+        <div class="mb-4">
+
+          <label class="form-label">
+            Category Name
+          </label>
+
+          <InputText class="form-control" @bind-Value="model.Name" placeholder="Example: Gaming Accessories" />
+
+          <ValidationMessage For="@(() => model.Name)" />
+
+        </div>
+
+
+        <div class="form-actions">
+
+          <button type="submit" class="btn btn-dark" disabled="@isSubmitting">
+
+            @if (isSubmitting)
+            {
+              <span class="spinner-border spinner-border-sm me-2">
+              </span>
+
+              <span>
+                Creating...
+              </span>
+            }
+            else
+            {
+              <span>
+                Create Category
+              </span>
+            }
+
+          </button>
+
+
+          <button type="button" class="btn btn-outline-secondary" disabled="@isSubmitting" @onclick="GoBack">
+
+            Cancel
+
+          </button>
+
+        </div>
+
+      </EditForm>
+
+    </div>
+  }
+
+</div>
+
+
+@code {
+  private CreateCategoryRequest model =
+      new();
+
+
+  private bool isLoading = true;
+
+  private bool isSubmitting;
+
+
+  private string? successMessage;
+
+  private string? errorMessage;
+
+
+  protected override async Task OnAfterRenderAsync(
+      bool firstRender)
+  {
+    if (!firstRender)
+    {
+      return;
+    }
+
+
+    try
+    {
+      await AuthState.LoadUserAsync();
+
+
+      if (!AuthState.IsAuthenticated)
+      {
+        errorMessage =
+            "You must login first.";
+
+        return;
+      }
+
+
+      if (!AuthState.IsAdmin)
+      {
+        errorMessage =
+            "You do not have permission to create categories.";
+
+        return;
+      }
+    }
+    finally
+    {
+      isLoading = false;
+
+      StateHasChanged();
+    }
+  }
+
+
+  private async Task HandleCreateAsync()
+  {
+    try
+    {
+      isSubmitting = true;
+
+      successMessage = null;
+
+      errorMessage = null;
+
+
+      HttpResponseMessage response =
+          await CategoryApiClient.CreateAsync(
+              model);
+
+
+      if (response.IsSuccessStatusCode)
+      {
+        successMessage =
+            "Category created successfully.";
+
+        model =
+            new CreateCategoryRequest();
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.Unauthorized)
+      {
+        errorMessage =
+            "You must login first.";
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.Forbidden)
+      {
+        errorMessage =
+            "You do not have permission to create categories.";
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.Conflict)
+      {
+        errorMessage =
+            "A category with this name already exists.";
+
+        return;
+      }
+
+
+      errorMessage =
+          $"Could not create category. Status: {(int)response.StatusCode}";
+    }
+    catch (HttpRequestException)
+    {
+      errorMessage =
+          "Could not connect to the API.";
+    }
+    finally
+    {
+      isSubmitting = false;
+    }
+  }
+
+
+  private void GoBack()
+  {
+    Navigation.NavigateTo(
+        "/categories");
+  }
+}

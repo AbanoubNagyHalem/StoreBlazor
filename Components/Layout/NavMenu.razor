@@ -66,6 +66,18 @@
 
         </NavLink>
 
+        <NavLink class="sidebar-link" href="categories">
+
+            <span class="sidebar-icon">
+                🗂️
+            </span>
+
+            <span>
+                Categories
+            </span>
+
+        </NavLink>
+
 
         @if (isLoaded &&
              AuthState.IsAdmin)
@@ -78,6 +90,18 @@
 
                 <span>
                     Add Product
+                </span>
+
+            </NavLink>
+
+            <NavLink class="sidebar-link" href="categories/create">
+
+                <span class="sidebar-icon">
+                    ⊕
+                </span>
+
+                <span>
+                    Add Category
                 </span>
 
             </NavLink>

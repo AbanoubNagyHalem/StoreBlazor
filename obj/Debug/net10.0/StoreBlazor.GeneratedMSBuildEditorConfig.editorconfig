@@ -63,6 +63,14 @@ build_metadata.AdditionalFiles.CssScope = b-kvr1xctr1k
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcUmVjb25uZWN0TW9kYWwucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = b-gwujlockv2
 
+[C:/Users/abano/OneDrive/Desktop/C\#/StoreBlazor/Components/Pages/Categories.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDYXRlZ29yaWVzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-4sw2z06qk8
+
+[C:/Users/abano/OneDrive/Desktop/C\#/StoreBlazor/Components/Pages/CreateCategory.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDcmVhdGVDYXRlZ29yeS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-kd3q26i88r
+
 [C:/Users/abano/OneDrive/Desktop/C\#/StoreBlazor/Components/Pages/CreateProduct.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDcmVhdGVQcm9kdWN0LnJhem9y
 build_metadata.AdditionalFiles.CssScope = b-fg9qlfq9d7

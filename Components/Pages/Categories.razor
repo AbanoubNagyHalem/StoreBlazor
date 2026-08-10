@@ -1,0 +1,157 @@
+@page "/categories"
+@rendermode InteractiveServer
+
+@inject CategoryApiClient CategoryApiClient
+@inject AuthStateService AuthState
+
+<PageTitle>Categories</PageTitle>
+
+<div class="categories-page">
+
+  <div class="page-header">
+
+    <div>
+
+      <span class="page-eyebrow">
+        CATEGORIES
+      </span>
+
+      <h1>
+        Categories
+      </h1>
+
+      <p>
+        Browse and manage product categories.
+      </p>
+
+    </div>
+
+
+    @if (AuthState.IsAdmin)
+    {
+      <a class="btn btn-dark" href="/categories/create">
+
+        + Add Category
+
+      </a>
+    }
+
+  </div>
+
+
+  @if (isLoading)
+  {
+    <div class="loading-state">
+
+      <div class="spinner-border" role="status">
+
+        <span class="visually-hidden">
+          Loading...
+        </span>
+
+      </div>
+
+      <span>
+        Loading categories...
+      </span>
+
+    </div>
+  }
+  else if (errorMessage is not null)
+  {
+    <div class="alert alert-danger">
+      @errorMessage
+    </div>
+  }
+  else if (categories.Count == 0)
+  {
+    <div class="empty-state">
+
+      <div class="empty-icon">
+        🗂️
+      </div>
+
+      <h3>
+        No categories yet
+      </h3>
+
+      <p>
+        Categories will appear here once they are created.
+      </p>
+
+    </div>
+  }
+  else
+  {
+    <div class="categories-grid">
+
+      @foreach (CategoryResponse category in categories)
+      {
+        <div class="category-card">
+
+          <div class="category-icon">
+            🗂️
+          </div>
+
+          <div>
+
+            <div class="category-label">
+              CATEGORY
+            </div>
+
+            <h3 class="category-name">
+              @category.Name
+            </h3>
+
+          </div>
+
+        </div>
+      }
+
+    </div>
+  }
+
+</div>
+
+
+@code {
+  private List<CategoryResponse> categories = [];
+
+  private bool isLoading = true;
+
+  private string? errorMessage;
+
+
+  protected override async Task OnInitializedAsync()
+  {
+    try
+    {
+      categories =
+          await CategoryApiClient.GetAllAsync();
+    }
+    catch (HttpRequestException)
+    {
+      errorMessage =
+          "Could not load categories from the API.";
+    }
+    finally
+    {
+      isLoading = false;
+    }
+  }
+
+  protected override async Task OnAfterRenderAsync(
+    bool firstRender)
+  {
+    if (!firstRender)
+    {
+      return;
+    }
+
+
+    await AuthState.LoadUserAsync();
+
+
+    StateHasChanged();
+  }
+}

@@ -1,0 +1,152 @@
+.categories-page {
+  padding-bottom: 3rem;
+}
+
+.page-header {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 1rem;
+
+  margin-bottom: 2rem;
+}
+.page-eyebrow {
+  display: block;
+  margin-bottom: 0.35rem;
+
+  color: #6b7280;
+
+  font-size: 0.72rem;
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+}
+
+.page-header h1 {
+  margin-bottom: 0.35rem;
+}
+
+.page-header p {
+  margin: 0;
+
+  color: #6b7280;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+
+  gap: 0.75rem;
+
+  padding: 2rem;
+
+  background: white;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+}
+
+.categories-grid {
+  display: grid;
+
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+
+  gap: 1rem;
+}
+
+.category-card {
+  display: flex;
+  align-items: center;
+
+  gap: 1rem;
+
+  padding: 1.25rem;
+
+  background: white;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-2px);
+
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.category-icon {
+  width: 46px;
+  height: 46px;
+
+  flex: 0 0 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background: #f3f4f6;
+
+  font-size: 1.2rem;
+}
+
+.category-label {
+  margin-bottom: 0.25rem;
+
+  color: #9ca3af;
+
+  font-size: 0.68rem;
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+}
+
+.category-name {
+  margin: 0;
+
+  color: #111827;
+
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.empty-state {
+  text-align: center;
+
+  padding: 4rem 1rem;
+
+  background: white;
+
+  border: 1px dashed #d1d5db;
+  border-radius: 16px;
+}
+
+.empty-icon {
+  margin-bottom: 1rem;
+
+  font-size: 2rem;
+}
+
+.empty-state h3 {
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  margin: 0;
+
+  color: #6b7280;
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
