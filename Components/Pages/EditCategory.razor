@@ -1,0 +1,321 @@
+@page "/categories/edit/{Id:int}"
+@rendermode InteractiveServer
+
+@inject CategoryApiClient CategoryApiClient
+@inject AuthStateService AuthState
+@inject NavigationManager Navigation
+
+<PageTitle>Edit Category</PageTitle>
+
+<div class="form-page">
+
+  <div class="form-page-header">
+
+    <span class="page-eyebrow">
+      CATEGORIES
+    </span>
+
+    <h1>
+      Edit Category
+    </h1>
+
+    <p>
+      Update category information.
+    </p>
+
+  </div>
+
+
+  @if (successMessage is not null)
+  {
+    <div class="alert alert-success">
+      @successMessage
+    </div>
+  }
+
+
+  @if (errorMessage is not null)
+  {
+    <div class="alert alert-danger">
+      @errorMessage
+    </div>
+  }
+
+
+  @if (isLoading)
+  {
+    <div class="loading-box">
+
+      <div class="spinner-border" role="status">
+
+        <span class="visually-hidden">
+          Loading...
+        </span>
+
+      </div>
+
+      <span>
+        Loading category...
+      </span>
+
+    </div>
+  }
+  else if (notFound)
+  {
+    <div class="not-found-box">
+
+      <div class="not-found-icon">
+        🔎
+      </div>
+
+      <h3>
+        Category not found
+      </h3>
+
+      <p>
+        The category you are trying to edit does not exist.
+      </p>
+
+      <button type="button" class="btn btn-outline-secondary" @onclick="GoBack">
+
+        Back to Categories
+
+      </button>
+
+    </div>
+  }
+  else
+  {
+    <div class="category-form">
+
+      <EditForm Model="@model" OnValidSubmit="HandleUpdateAsync">
+
+        <DataAnnotationsValidator />
+
+        <ValidationSummary />
+
+
+        <div class="mb-4">
+
+          <label class="form-label">
+            Category Name
+          </label>
+
+          <InputText class="form-control" @bind-Value="model.Name" placeholder="Enter category name" />
+
+          <ValidationMessage For="@(() => model.Name)" />
+
+        </div>
+
+
+        <div class="form-actions">
+
+          <button type="submit" class="btn btn-dark" disabled="@isSubmitting">
+
+            @if (isSubmitting)
+            {
+              <span class="spinner-border spinner-border-sm me-2">
+              </span>
+
+              <span>
+                Saving...
+              </span>
+            }
+            else
+            {
+              <span>
+                Save Changes
+              </span>
+            }
+
+          </button>
+
+
+          <button type="button" class="btn btn-outline-secondary" disabled="@isSubmitting" @onclick="GoBack">
+
+            Cancel
+
+          </button>
+
+        </div>
+
+      </EditForm>
+
+    </div>
+  }
+
+</div>
+
+
+@code {
+  [Parameter]
+  public int Id { get; set; }
+
+
+  private UpdateCategoryRequest model =
+      new();
+
+
+  private bool isLoading = true;
+
+  private bool isSubmitting;
+
+  private bool notFound;
+
+
+  private string? successMessage;
+
+  private string? errorMessage;
+
+
+  protected override async Task OnAfterRenderAsync(
+      bool firstRender)
+  {
+    if (!firstRender)
+    {
+      return;
+    }
+
+
+    try
+    {
+      await AuthState.LoadUserAsync();
+
+
+      if (!AuthState.IsAuthenticated)
+      {
+        errorMessage =
+            "You must login first.";
+
+        return;
+      }
+
+
+      if (!AuthState.IsAdmin)
+      {
+        errorMessage =
+            "You do not have permission to edit categories.";
+
+        return;
+      }
+
+
+      CategoryResponse? category =
+          await CategoryApiClient.GetByIdAsync(
+              Id);
+
+
+      if (category is null)
+      {
+        notFound = true;
+
+        return;
+      }
+
+
+      model =
+          new UpdateCategoryRequest
+          {
+            Name = category.Name
+          };
+    }
+    catch (HttpRequestException)
+    {
+      errorMessage =
+          "Could not load category.";
+    }
+    finally
+    {
+      isLoading = false;
+
+      StateHasChanged();
+    }
+  }
+
+
+  private async Task HandleUpdateAsync()
+  {
+    try
+    {
+      isSubmitting = true;
+
+      successMessage = null;
+
+      errorMessage = null;
+
+
+      HttpResponseMessage response =
+          await CategoryApiClient.UpdateAsync(
+              Id,
+              model);
+
+
+      if (response.IsSuccessStatusCode)
+      {
+        successMessage =
+            "Category updated successfully.";
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.Unauthorized)
+      {
+        errorMessage =
+            "You must login first.";
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.Forbidden)
+      {
+        errorMessage =
+            "You do not have permission to edit categories.";
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.NotFound)
+      {
+        notFound = true;
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.Conflict)
+      {
+        errorMessage =
+            "A category with this name already exists.";
+
+        return;
+      }
+
+
+      errorMessage =
+          $"Could not update category. Status: {(int)response.StatusCode}";
+    }
+    catch (HttpRequestException)
+    {
+      errorMessage =
+          "Could not connect to the API.";
+    }
+    finally
+    {
+      isSubmitting = false;
+    }
+  }
+
+
+  private void GoBack()
+  {
+    Navigation.NavigateTo(
+        "/categories");
+  }
+}
