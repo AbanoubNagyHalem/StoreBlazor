@@ -3,7 +3,7 @@
 
 @inject ProductApiClient ProductApiClient
 @inject CategoryApiClient CategoryApiClient
-@inject AuthStateService AuthState
+@inject AdminPageGuard AdminPageGuard
 @inject NavigationManager Navigation
 
 <PageTitle>Edit Product</PageTitle>
@@ -13,35 +13,33 @@
 
   <div class="form-page-header">
 
-    <div>
-      <span class="page-eyebrow">
-        PRODUCTS
-      </span>
+    <span class="page-eyebrow">
+      PRODUCTS
+    </span>
 
-      <h1>
-        Edit Product
-      </h1>
+    <h1>
+      Edit Product
+    </h1>
 
-      <p>
-        Update product information.
-      </p>
-    </div>
+    <p>
+      Update product information.
+    </p>
 
   </div>
-
-
-  @if (successMessage is not null)
-  {
-    <div class="alert alert-success">
-      @successMessage
-    </div>
-  }
 
 
   @if (errorMessage is not null)
   {
     <div class="alert alert-danger">
       @errorMessage
+    </div>
+  }
+
+
+  @if (successMessage is not null)
+  {
+    <div class="alert alert-success">
+      @successMessage
     </div>
   }
 
@@ -60,14 +58,122 @@
   }
   else if (notFound)
   {
-    <div class="alert alert-warning">
-      Product not found.
+    <div class="not-found-box">
+
+      <h3>
+        Product not found
+      </h3>
+
+      <p>
+        The product does not exist.
+      </p>
+
+      <button class="btn btn-outline-secondary" @onclick="GoBack">
+
+        Back to Products
+
+      </button>
+
     </div>
   }
   else
   {
-    <ProductForm Model="@model" Categories="@categories" IsSubmitting="@isSubmitting" SubmitText="Save Changes"
-                 SubmittingText="Saving..." ShowCancel="true" OnValidSubmit="HandleUpdateAsync" OnCancel="GoBack" />
+    <div class="product-form">
+
+      <EditForm Model="@model" OnValidSubmit="HandleUpdateAsync">
+
+        <DataAnnotationsValidator />
+
+        <ValidationSummary />
+
+
+        <div class="mb-4">
+
+          <label class="form-label">
+            Product Name
+          </label>
+
+          <InputText class="form-control" @bind-Value="model.Name" />
+
+          <ValidationMessage For="@(() => model.Name)" />
+
+        </div>
+
+
+        <div class="mb-4">
+
+          <label class="form-label">
+            Price
+          </label>
+
+          <InputNumber class="form-control" @bind-Value="model.Price" />
+
+          <ValidationMessage For="@(() => model.Price)" />
+
+        </div>
+
+
+        <div class="mb-4">
+
+          <label class="form-label">
+            Category
+          </label>
+
+          <InputSelect class="form-select" @bind-Value="model.CategoryId">
+
+            <option value="0">
+              Select a category
+            </option>
+
+            @foreach (
+                CategoryResponse category
+                in categories)
+            {
+              <option value="@category.Id">
+                @category.Name
+              </option>
+            }
+
+          </InputSelect>
+
+          <ValidationMessage For="@(() => model.CategoryId)" />
+
+        </div>
+
+
+        <div class="form-actions">
+
+          <button type="submit" class="btn btn-dark" disabled="@isSubmitting">
+
+            @if (isSubmitting)
+            {
+              <span class="spinner-border spinner-border-sm me-2"></span>
+
+              <span>
+                Saving...
+              </span>
+            }
+            else
+            {
+              <span>
+                Save Changes
+              </span>
+            }
+
+          </button>
+
+
+          <button type="button" class="btn btn-outline-secondary" disabled="@isSubmitting" @onclick="GoBack">
+
+            Cancel
+
+          </button>
+
+        </div>
+
+      </EditForm>
+
+    </div>
   }
 
 </div>
@@ -78,7 +184,7 @@
   public int Id { get; set; }
 
 
-  private ProductFormModel model =
+  private UpdateProductRequest model =
       new();
 
 
@@ -93,9 +199,9 @@
   private bool notFound;
 
 
-  private string? successMessage;
-
   private string? errorMessage;
+
+  private string? successMessage;
 
 
   protected override async Task OnAfterRenderAsync(
@@ -106,11 +212,20 @@
       return;
     }
 
+
+    bool allowed =
+        await AdminPageGuard.EnsureAdminAsync(
+            "/products");
+
+
+    if (!allowed)
+    {
+      return;
+    }
+
+
     try
     {
-      await AuthState.LoadUserAsync();
-
-
       categories =
           await CategoryApiClient.GetAllAsync();
 
@@ -129,17 +244,18 @@
 
 
       model =
-          new ProductFormModel
+          new UpdateProductRequest
           {
             Name = product.Name,
             Price = product.Price,
-            CategoryId = product.CategoryId
+            CategoryId =
+                  product.CategoryId
           };
     }
     catch (HttpRequestException)
     {
       errorMessage =
-          "Could not load product data.";
+          "Could not load product.";
     }
     finally
     {
@@ -156,30 +272,52 @@
     {
       isSubmitting = true;
 
-      successMessage = null;
-
       errorMessage = null;
 
-
-      UpdateProductRequest request =
-          new()
-          {
-            Name = model.Name,
-            Price = model.Price,
-            CategoryId = model.CategoryId
-          };
+      successMessage = null;
 
 
       HttpResponseMessage response =
           await ProductApiClient.UpdateAsync(
               Id,
-              request);
+              model);
 
 
       if (response.IsSuccessStatusCode)
       {
         successMessage =
             "Product updated successfully.";
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.NotFound)
+      {
+        notFound = true;
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.Conflict)
+      {
+        errorMessage =
+            "A product with this name already exists.";
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.Unauthorized ||
+          response.StatusCode ==
+          System.Net.HttpStatusCode.Forbidden)
+      {
+        errorMessage =
+            "You do not have permission to edit this product.";
 
         return;
       }

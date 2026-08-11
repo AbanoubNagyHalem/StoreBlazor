@@ -2,10 +2,11 @@
 @rendermode InteractiveServer
 
 @inject CategoryApiClient CategoryApiClient
-@inject AuthStateService AuthState
+@inject AdminPageGuard AdminPageGuard
 @inject NavigationManager Navigation
 
 <PageTitle>Edit Category</PageTitle>
+
 
 <div class="form-page">
 
@@ -46,13 +47,7 @@
   {
     <div class="loading-box">
 
-      <div class="spinner-border" role="status">
-
-        <span class="visually-hidden">
-          Loading...
-        </span>
-
-      </div>
+      <div class="spinner-border"></div>
 
       <span>
         Loading category...
@@ -64,19 +59,15 @@
   {
     <div class="not-found-box">
 
-      <div class="not-found-icon">
-        🔎
-      </div>
-
       <h3>
         Category not found
       </h3>
 
       <p>
-        The category you are trying to edit does not exist.
+        The category does not exist.
       </p>
 
-      <button type="button" class="btn btn-outline-secondary" @onclick="GoBack">
+      <button class="btn btn-outline-secondary" @onclick="GoBack">
 
         Back to Categories
 
@@ -101,7 +92,7 @@
             Category Name
           </label>
 
-          <InputText class="form-control" @bind-Value="model.Name" placeholder="Enter category name" />
+          <InputText class="form-control" @bind-Value="model.Name" />
 
           <ValidationMessage For="@(() => model.Name)" />
 
@@ -114,8 +105,7 @@
 
             @if (isSubmitting)
             {
-              <span class="spinner-border spinner-border-sm me-2">
-              </span>
+              <span class="spinner-border spinner-border-sm me-2"></span>
 
               <span>
                 Saving...
@@ -177,29 +167,19 @@
     }
 
 
+    bool allowed =
+        await AdminPageGuard.EnsureAdminAsync(
+            "/categories");
+
+
+    if (!allowed)
+    {
+      return;
+    }
+
+
     try
     {
-      await AuthState.LoadUserAsync();
-
-
-      if (!AuthState.IsAuthenticated)
-      {
-        errorMessage =
-            "You must login first.";
-
-        return;
-      }
-
-
-      if (!AuthState.IsAdmin)
-      {
-        errorMessage =
-            "You do not have permission to edit categories.";
-
-        return;
-      }
-
-
       CategoryResponse? category =
           await CategoryApiClient.GetByIdAsync(
               Id);
@@ -260,26 +240,6 @@
 
 
       if (response.StatusCode ==
-          System.Net.HttpStatusCode.Unauthorized)
-      {
-        errorMessage =
-            "You must login first.";
-
-        return;
-      }
-
-
-      if (response.StatusCode ==
-          System.Net.HttpStatusCode.Forbidden)
-      {
-        errorMessage =
-            "You do not have permission to edit categories.";
-
-        return;
-      }
-
-
-      if (response.StatusCode ==
           System.Net.HttpStatusCode.NotFound)
       {
         notFound = true;
@@ -293,6 +253,18 @@
       {
         errorMessage =
             "A category with this name already exists.";
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.Unauthorized ||
+          response.StatusCode ==
+          System.Net.HttpStatusCode.Forbidden)
+      {
+        errorMessage =
+            "You do not have permission to edit categories.";
 
         return;
       }

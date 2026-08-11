@@ -1,0 +1,86 @@
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject AuthStateService AuthState
+
+<div class="auth-status">
+
+  @if (isLoading)
+  {
+    <span>
+      Checking authentication...
+    </span>
+  }
+  else if (isAuthenticated)
+  {
+    <div class="alert alert-success mb-0">
+
+      AuthenticationStateProvider says:
+
+      <strong>
+        @userName
+      </strong>
+
+      is logged in as
+
+      <strong>
+        @role
+      </strong>.
+
+    </div>
+  }
+  else
+  {
+    <div class="alert alert-secondary mb-0">
+
+      AuthenticationStateProvider says:
+      User is not authenticated.
+
+    </div>
+  }
+
+</div>
+
+
+@code {
+  private bool isLoading = true;
+
+  private bool isAuthenticated;
+
+  private string? userName;
+
+  private string? role;
+
+
+  protected override async Task OnAfterRenderAsync(
+      bool firstRender)
+  {
+    if (!firstRender)
+    {
+      return;
+    }
+
+    await AuthState.LoadUserAsync();
+
+    AuthenticationState authenticationState =
+        await AuthenticationStateProvider
+            .GetAuthenticationStateAsync();
+
+    var user =
+        authenticationState.User;
+
+    isAuthenticated =
+        user.Identity?.IsAuthenticated
+        ?? false;
+
+    userName =
+        user.Identity?.Name;
+
+    role =
+        user.FindFirst(
+            System.Security.Claims.ClaimTypes.Role)
+            ?.Value;
+
+    isLoading = false;
+
+    StateHasChanged();
+  }
+}

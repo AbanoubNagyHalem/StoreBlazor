@@ -2,7 +2,7 @@
 @rendermode InteractiveServer
 
 @inject CategoryApiClient CategoryApiClient
-@inject AuthStateService AuthState
+@inject AdminPageGuard AdminPageGuard
 @inject NavigationManager Navigation
 
 <PageTitle>Create Category</PageTitle>
@@ -12,31 +12,19 @@
 
   <div class="form-page-header">
 
-    <div>
+    <span class="page-eyebrow">
+      CATEGORIES
+    </span>
 
-      <span class="page-eyebrow">
-        CATEGORIES
-      </span>
+    <h1>
+      Create Category
+    </h1>
 
-      <h1>
-        Create Category
-      </h1>
-
-      <p>
-        Add a new category to organize your products.
-      </p>
-
-    </div>
+    <p>
+      Add a new product category.
+    </p>
 
   </div>
-
-
-  @if (successMessage is not null)
-  {
-    <div class="alert alert-success">
-      @successMessage
-    </div>
-  }
 
 
   @if (errorMessage is not null)
@@ -47,77 +35,69 @@
   }
 
 
-  @if (isLoading)
+  @if (successMessage is not null)
   {
-    <div class="loading-box">
-
-      <div class="spinner-border"></div>
-
-      <span>
-        Loading form...
-      </span>
-
+    <div class="alert alert-success">
+      @successMessage
     </div>
   }
-  else
-  {
-    <div class="category-form">
-
-      <EditForm Model="@model" OnValidSubmit="HandleCreateAsync">
-
-        <DataAnnotationsValidator />
-
-        <ValidationSummary />
 
 
-        <div class="mb-4">
+  <div class="category-form">
 
-          <label class="form-label">
-            Category Name
-          </label>
+    <EditForm Model="@model" OnValidSubmit="HandleCreateAsync">
 
-          <InputText class="form-control" @bind-Value="model.Name" placeholder="Example: Gaming Accessories" />
+      <DataAnnotationsValidator />
 
-          <ValidationMessage For="@(() => model.Name)" />
-
-        </div>
+      <ValidationSummary />
 
 
-        <div class="form-actions">
+      <div class="mb-4">
 
-          <button type="submit" class="btn btn-dark" disabled="@isSubmitting">
+        <label class="form-label">
+          Category Name
+        </label>
 
-            @if (isSubmitting)
-            {
-              <span class="spinner-border spinner-border-sm me-2">
-              </span>
+        <InputText class="form-control" @bind-Value="model.Name" placeholder="Enter category name" />
 
-              <span>
-                Creating...
-              </span>
-            }
-            else
-            {
-              <span>
-                Create Category
-              </span>
-            }
+        <ValidationMessage For="@(() => model.Name)" />
 
-          </button>
+      </div>
 
 
-          <button type="button" class="btn btn-outline-secondary" disabled="@isSubmitting" @onclick="GoBack">
+      <div class="form-actions">
 
-            Cancel
+        <button type="submit" class="btn btn-dark" disabled="@isSubmitting">
 
-          </button>
+          @if (isSubmitting)
+          {
+            <span class="spinner-border spinner-border-sm me-2"></span>
 
-        </div>
+            <span>
+              Creating...
+            </span>
+          }
+          else
+          {
+            <span>
+              Create Category
+            </span>
+          }
 
-      </EditForm>
+        </button>
 
-    </div>
-  }
+
+        <button type="button" class="btn btn-outline-secondary" disabled="@isSubmitting" @onclick="GoBack">
+
+          Cancel
+
+        </button>
+
+      </div>
+
+    </EditForm>
+
+  </div>
 
 </div>
 
@@ -127,14 +107,12 @@
       new();
 
 
-  private bool isLoading = true;
-
   private bool isSubmitting;
 
 
-  private string? successMessage;
-
   private string? errorMessage;
+
+  private string? successMessage;
 
 
   protected override async Task OnAfterRenderAsync(
@@ -146,34 +124,18 @@
     }
 
 
-    try
+    bool allowed =
+        await AdminPageGuard.EnsureAdminAsync(
+            "/categories");
+
+
+    if (!allowed)
     {
-      await AuthState.LoadUserAsync();
-
-
-      if (!AuthState.IsAuthenticated)
-      {
-        errorMessage =
-            "You must login first.";
-
-        return;
-      }
-
-
-      if (!AuthState.IsAdmin)
-      {
-        errorMessage =
-            "You do not have permission to create categories.";
-
-        return;
-      }
+      return;
     }
-    finally
-    {
-      isLoading = false;
 
-      StateHasChanged();
-    }
+
+    StateHasChanged();
   }
 
 
@@ -183,9 +145,9 @@
     {
       isSubmitting = true;
 
-      successMessage = null;
-
       errorMessage = null;
+
+      successMessage = null;
 
 
       HttpResponseMessage response =
@@ -206,30 +168,22 @@
 
 
       if (response.StatusCode ==
-          System.Net.HttpStatusCode.Unauthorized)
-      {
-        errorMessage =
-            "You must login first.";
-
-        return;
-      }
-
-
-      if (response.StatusCode ==
-          System.Net.HttpStatusCode.Forbidden)
-      {
-        errorMessage =
-            "You do not have permission to create categories.";
-
-        return;
-      }
-
-
-      if (response.StatusCode ==
           System.Net.HttpStatusCode.Conflict)
       {
         errorMessage =
             "A category with this name already exists.";
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.Unauthorized ||
+          response.StatusCode ==
+          System.Net.HttpStatusCode.Forbidden)
+      {
+        errorMessage =
+            "You do not have permission to create categories.";
 
         return;
       }

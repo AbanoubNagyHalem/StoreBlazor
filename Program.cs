@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using StoreBlazor.Components;
 using StoreBlazor.Services;
 
 var builder =
     WebApplication.CreateBuilder(args);
+
 
 builder.Services
     .AddRazorComponents()
@@ -17,7 +19,7 @@ string apiBaseUrl =
 
 
 // ========================
-// Authentication state
+// Authentication State
 // ========================
 
 builder.Services.AddScoped<
@@ -26,9 +28,28 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     AuthStateService>();
 
+builder.Services.AddAuthorizationCore();
+
+builder.Services.AddScoped<
+    CustomAuthenticationStateProvider>();
+
+builder.Services.AddScoped<
+    AuthenticationStateProvider>(
+        serviceProvider =>
+            serviceProvider.GetRequiredService<
+                CustomAuthenticationStateProvider>());
+
 
 // ========================
-// HTTP infrastructure
+// Page Guards
+// ========================
+
+builder.Services.AddScoped<
+    AdminPageGuard>();
+
+
+// ========================
+// HTTP Infrastructure
 // ========================
 
 builder.Services.AddHttpClient(
@@ -75,13 +96,16 @@ app.UseStatusCodePagesWithReExecute(
     "/not-found",
     createScopeForStatusCodePages: true);
 
+
 app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
 app.MapStaticAssets();
 
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
 
 app.Run();

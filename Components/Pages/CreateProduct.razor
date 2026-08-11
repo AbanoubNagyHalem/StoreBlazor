@@ -3,7 +3,7 @@
 
 @inject ProductApiClient ProductApiClient
 @inject CategoryApiClient CategoryApiClient
-@inject AuthStateService AuthState
+@inject AdminPageGuard AdminPageGuard
 @inject NavigationManager Navigation
 
 <PageTitle>Create Product</PageTitle>
@@ -13,35 +13,33 @@
 
   <div class="form-page-header">
 
-    <div>
-      <span class="page-eyebrow">
-        PRODUCTS
-      </span>
+    <span class="page-eyebrow">
+      PRODUCTS
+    </span>
 
-      <h1>
-        Create Product
-      </h1>
+    <h1>
+      Create Product
+    </h1>
 
-      <p>
-        Add a new product to your store.
-      </p>
-    </div>
+    <p>
+      Add a new product to your store.
+    </p>
 
   </div>
-
-
-  @if (successMessage is not null)
-  {
-    <div class="alert alert-success">
-      @successMessage
-    </div>
-  }
 
 
   @if (errorMessage is not null)
   {
     <div class="alert alert-danger">
       @errorMessage
+    </div>
+  }
+
+
+  @if (successMessage is not null)
+  {
+    <div class="alert alert-success">
+      @successMessage
     </div>
   }
 
@@ -60,25 +58,124 @@
   }
   else
   {
-    <ProductForm Model="@model" Categories="@categories" IsSubmitting="@isSubmitting" SubmitText="Create Product"
-                 SubmittingText="Creating..." ShowCancel="true" OnValidSubmit="HandleCreateAsync" OnCancel="GoBack" />
+    <div class="product-form">
+
+      <EditForm Model="@model" OnValidSubmit="HandleCreateAsync">
+
+        <DataAnnotationsValidator />
+
+        <ValidationSummary />
+
+
+        <div class="mb-4">
+
+          <label class="form-label">
+            Product Name
+          </label>
+
+          <InputText class="form-control" @bind-Value="model.Name" placeholder="Enter product name" />
+
+          <ValidationMessage For="@(() => model.Name)" />
+
+        </div>
+
+
+        <div class="mb-4">
+
+          <label class="form-label">
+            Price
+          </label>
+
+          <InputNumber class="form-control" @bind-Value="model.Price" />
+
+          <ValidationMessage For="@(() => model.Price)" />
+
+        </div>
+
+
+        <div class="mb-4">
+
+          <label class="form-label">
+            Category
+          </label>
+
+          <InputSelect class="form-select" @bind-Value="model.CategoryId">
+
+            <option value="0">
+              Select a category
+            </option>
+
+            @foreach (
+                CategoryResponse category
+                in categories)
+            {
+              <option value="@category.Id">
+                @category.Name
+              </option>
+            }
+
+          </InputSelect>
+
+          <ValidationMessage For="@(() => model.CategoryId)" />
+
+        </div>
+
+
+        <div class="form-actions">
+
+          <button type="submit" class="btn btn-dark" disabled="@isSubmitting">
+
+            @if (isSubmitting)
+            {
+              <span class="spinner-border spinner-border-sm me-2"></span>
+
+              <span>
+                Creating...
+              </span>
+            }
+            else
+            {
+              <span>
+                Create Product
+              </span>
+            }
+
+          </button>
+
+
+          <button type="button" class="btn btn-outline-secondary" disabled="@isSubmitting" @onclick="GoBack">
+
+            Cancel
+
+          </button>
+
+        </div>
+
+      </EditForm>
+
+    </div>
   }
 
 </div>
 
 
 @code {
-  private ProductFormModel model = new();
+  private CreateProductRequest model =
+      new();
 
-  private List<CategoryResponse> categories = [];
+
+  private List<CategoryResponse> categories =
+      [];
+
 
   private bool isLoading = true;
 
   private bool isSubmitting;
 
-  private string? successMessage;
 
   private string? errorMessage;
+
+  private string? successMessage;
 
 
   protected override async Task OnAfterRenderAsync(
@@ -89,17 +186,27 @@
       return;
     }
 
+
+    bool allowed =
+        await AdminPageGuard.EnsureAdminAsync(
+            "/products");
+
+
+    if (!allowed)
+    {
+      return;
+    }
+
+
     try
     {
-      await AuthState.LoadUserAsync();
-
       categories =
           await CategoryApiClient.GetAllAsync();
     }
     catch (HttpRequestException)
     {
       errorMessage =
-          "Could not load form data.";
+          "Could not load categories.";
     }
     finally
     {
@@ -116,23 +223,14 @@
     {
       isSubmitting = true;
 
-      successMessage = null;
-
       errorMessage = null;
 
-
-      CreateProductRequest request =
-          new()
-          {
-            Name = model.Name,
-            Price = model.Price,
-            CategoryId = model.CategoryId
-          };
+      successMessage = null;
 
 
       HttpResponseMessage response =
           await ProductApiClient.CreateAsync(
-              request);
+              model);
 
 
       if (response.IsSuccessStatusCode)
@@ -141,7 +239,47 @@
             "Product created successfully.";
 
         model =
-            new ProductFormModel();
+            new CreateProductRequest();
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.Unauthorized)
+      {
+        errorMessage =
+            "Your session is not authorized.";
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.Forbidden)
+      {
+        errorMessage =
+            "You do not have permission to create products.";
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.NotFound)
+      {
+        errorMessage =
+            "The selected category was not found.";
+
+        return;
+      }
+
+
+      if (response.StatusCode ==
+          System.Net.HttpStatusCode.Conflict)
+      {
+        errorMessage =
+            "A product with this name already exists.";
 
         return;
       }

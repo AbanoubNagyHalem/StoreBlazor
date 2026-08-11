@@ -4,6 +4,7 @@
 @inject ProductApiClient ProductApiClient
 @inject CategoryApiClient CategoryApiClient
 @inject AuthStateService AuthState
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JS
 
 <PageTitle>Products</PageTitle>
@@ -20,7 +21,7 @@
       </p>
     </div>
 
-    @if (AuthState.IsAdmin)
+    @if (isAdmin)
     {
       <a href="/products/create" class="btn btn-dark">
 
@@ -28,7 +29,6 @@
 
       </a>
     }
-
   </div>
 
   <ProductFilters Search="@query.Search" SearchChanged="OnSearchChanged" CategoryId="@query.CategoryId"
@@ -95,7 +95,7 @@
       @foreach (var product in products)
       {
         <ProductCard Id="@product.Id" Name="@product.Name" Price="@product.Price" CategoryName="@product.CategoryName"
-                     OnSelected="SelectProduct" OnDelete="DeleteProductAsync" ShowAdminActions="@AuthState.IsAdmin" />
+                     OnSelected="SelectProduct" OnDelete="DeleteProductAsync" ShowAdminActions="@isAdmin" />
       }
 
     </div>
@@ -129,6 +129,8 @@
 
   private int totalPages;
 
+  private bool isAdmin;
+
   protected override async Task OnInitializedAsync()
   {
     await LoadCategoriesAsync();
@@ -145,6 +147,13 @@
     }
 
     await AuthState.LoadUserAsync();
+
+    AuthenticationState state =
+        await AuthenticationStateProvider
+            .GetAuthenticationStateAsync();
+
+    isAdmin =
+        state.User.IsInRole("Admin");
 
     StateHasChanged();
   }

@@ -3,6 +3,7 @@
 
 @inject CategoryApiClient CategoryApiClient
 @inject AuthStateService AuthState
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JS
 
 <PageTitle>Categories</PageTitle>
@@ -25,7 +26,7 @@
       </p>
     </div>
 
-    @if (AuthState.IsAdmin)
+    @if (isAdmin)
     {
       <a class="btn btn-dark" href="/categories/create">
 
@@ -115,7 +116,7 @@
           </div>
 
 
-          @if (AuthState.IsAdmin)
+          @if (isAdmin)
           {
             <div class="category-actions">
 
@@ -156,6 +157,7 @@
 
   private string? successMessage;
 
+  private bool isAdmin;
 
   protected override async Task OnInitializedAsync()
   {
@@ -173,9 +175,15 @@
 
     await AuthState.LoadUserAsync();
 
+    AuthenticationState state =
+        await AuthenticationStateProvider
+            .GetAuthenticationStateAsync();
+
+    isAdmin =
+        state.User.IsInRole("Admin");
+
     StateHasChanged();
   }
-
 
   private async Task LoadCategoriesAsync()
   {

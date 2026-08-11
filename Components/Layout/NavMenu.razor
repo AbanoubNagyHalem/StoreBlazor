@@ -3,6 +3,7 @@
 @implements IDisposable
 
 @inject AuthStateService AuthState
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
 
 
@@ -66,6 +67,7 @@
 
         </NavLink>
 
+
         <NavLink class="sidebar-link" href="categories">
 
             <span class="sidebar-icon">
@@ -79,8 +81,7 @@
         </NavLink>
 
 
-        @if (isLoaded &&
-             AuthState.IsAdmin)
+        @if (isAuthLoaded && isAdmin)
         {
             <NavLink class="sidebar-link" href="products/create">
 
@@ -93,6 +94,7 @@
                 </span>
 
             </NavLink>
+
 
             <NavLink class="sidebar-link" href="categories/create">
 
@@ -177,10 +179,13 @@
 @code {
     private bool isLoaded;
 
+    private bool isAuthLoaded;
 
-    protected override async Task
-        OnAfterRenderAsync(
-            bool firstRender)
+    private bool isAdmin;
+
+
+    protected override async Task OnAfterRenderAsync(
+        bool firstRender)
     {
         if (!firstRender)
         {
@@ -188,24 +193,61 @@
         }
 
 
+        // النظام القديم ما زال مسؤولًا عن تحميل
+        // البيانات من sessionStorage
+        await AuthState.LoadUserAsync();
+
         AuthState.OnChange +=
             HandleAuthStateChanged;
 
+        // اسمع أي تغيير يحصل في AuthenticationStateProvider
+        AuthenticationStateProvider.AuthenticationStateChanged +=
+            HandleAuthenticationStateChanged;
 
-        await AuthState.LoadUserAsync();
+
+        await LoadAuthenticationStateAsync();
 
 
         isLoaded = true;
-
 
         StateHasChanged();
     }
 
 
-    private void HandleAuthStateChanged()
+    private async Task LoadAuthenticationStateAsync()
     {
-        InvokeAsync(
-            StateHasChanged);
+        AuthenticationState state =
+            await AuthenticationStateProvider
+                .GetAuthenticationStateAsync();
+
+
+        isAdmin =
+            state.User.IsInRole("Admin");
+
+
+        isAuthLoaded = true;
+    }
+
+
+    private void HandleAuthenticationStateChanged(
+        Task<AuthenticationState> authenticationStateTask)
+    {
+        _ = InvokeAsync(
+            async () =>
+            {
+                AuthenticationState state =
+                    await authenticationStateTask;
+
+
+                isAdmin =
+                    state.User.IsInRole("Admin");
+
+
+                isAuthLoaded = true;
+
+
+                StateHasChanged();
+            });
     }
 
 
@@ -239,5 +281,16 @@
     {
         AuthState.OnChange -=
             HandleAuthStateChanged;
+
+
+        AuthenticationStateProvider.AuthenticationStateChanged -=
+            HandleAuthenticationStateChanged;
+    }
+
+
+    private void HandleAuthStateChanged()
+    {
+        InvokeAsync(
+            StateHasChanged);
     }
 }
