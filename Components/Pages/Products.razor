@@ -1,10 +1,10 @@
 @page "/products"
-@rendermode InteractiveServer
 
 @inject ProductApiClient ProductApiClient
 @inject CategoryApiClient CategoryApiClient
 @inject AuthStateService AuthState
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject SelectedProductState SelectedProductState
 @inject IJSRuntime JS
 
 <PageTitle>Products</PageTitle>
@@ -46,19 +46,18 @@
 
 
   @if (!string.IsNullOrWhiteSpace(
-          selectedProduct))
+          SelectedProductState.ProductName))
   {
     <div class="alert alert-success">
 
       Selected product:
 
       <strong>
-        @selectedProduct
+        @SelectedProductState.ProductName
       </strong>
 
     </div>
   }
-
 
   @if (isLoading)
   {
@@ -305,10 +304,9 @@
   private void SelectProduct(
       string productName)
   {
-    selectedProduct =
-        productName;
+    SelectedProductState.SetSelectedProduct(
+        productName);
   }
-
 
   private async Task DeleteProductAsync(
       int productId)

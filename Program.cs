@@ -77,6 +77,9 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     CategoryApiClient>();
 
+builder.Services.AddScoped<
+SelectedProductState>();
+
 
 var app =
     builder.Build();

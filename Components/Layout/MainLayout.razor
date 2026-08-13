@@ -1,4 +1,7 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
+
+@inject SelectedProductState SelectedProductState
 
 <div class="page">
 
@@ -13,13 +16,34 @@
 
         <div class="top-row">
 
-            <div class="top-row-title">
-                Store Dashboard
+            <div class="top-row-left">
+
+                <div class="top-row-title">
+                    Store Dashboard
+                </div>
+
+                <div class="top-row-subtitle">
+                    Manage your products and categories
+                </div>
+
             </div>
 
-            <div class="top-row-subtitle">
-                Manage your products and categories
-            </div>
+
+            @if (!string.IsNullOrWhiteSpace(
+                    SelectedProductState.ProductName))
+            {
+                <div class="selected-product">
+
+                    <span class="selected-product-label">
+                        Selected
+                    </span>
+
+                    <span class="selected-product-name">
+                        @SelectedProductState.ProductName
+                    </span>
+
+                </div>
+            }
 
         </div>
 
@@ -33,3 +57,26 @@
     </main>
 
 </div>
+
+
+@code {
+    protected override void OnInitialized()
+    {
+        SelectedProductState.OnChange +=
+            HandleSelectedProductChanged;
+    }
+
+
+    private void HandleSelectedProductChanged()
+    {
+        InvokeAsync(
+            StateHasChanged);
+    }
+
+
+    public void Dispose()
+    {
+        SelectedProductState.OnChange -=
+            HandleSelectedProductChanged;
+    }
+}
