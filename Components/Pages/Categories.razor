@@ -13,6 +13,7 @@
   <div class="page-header">
 
     <div>
+
       <span class="page-eyebrow">
         CATEGORIES
       </span>
@@ -24,7 +25,9 @@
       <p>
         Browse and manage product categories.
       </p>
+
     </div>
+
 
     @if (isAdmin)
     {
@@ -38,12 +41,7 @@
   </div>
 
 
-  @if (errorMessage is not null)
-  {
-    <div class="alert alert-danger">
-      @errorMessage
-    </div>
-  }
+  <ErrorState Message="@errorMessage" />
 
 
   @if (successMessage is not null)
@@ -56,45 +54,19 @@
 
   @if (isLoading)
   {
-    <div class="loading-state">
-
-      <div class="spinner-border" role="status">
-
-        <span class="visually-hidden">
-          Loading...
-        </span>
-
-      </div>
-
-      <span>
-        Loading categories...
-      </span>
-
-    </div>
+    <LoadingState Message="Loading categories..." />
   }
   else if (categories.Count == 0)
   {
-    <div class="empty-state">
-
-      <div class="empty-icon">
-        🗂️
-      </div>
-
-      <h3>
-        No categories yet
-      </h3>
-
-      <p>
-        Categories will appear here once they are created.
-      </p>
-
-    </div>
+    <EmptyState Icon="🗂️" Title="No categories yet" Message="Categories will appear here once they are created." />
   }
   else
   {
     <div class="categories-grid">
 
-      @foreach (CategoryResponse category in categories)
+      @foreach (
+          CategoryResponse category
+          in categories)
       {
         <div class="category-card">
 
@@ -147,17 +119,21 @@
 
 
 @code {
-  private List<CategoryResponse> categories = [];
+  private List<CategoryResponse> categories =
+      [];
+
 
   private bool isLoading = true;
 
   private bool isDeleting;
 
+  private bool isAdmin;
+
+
   private string? errorMessage;
 
   private string? successMessage;
 
-  private bool isAdmin;
 
   protected override async Task OnInitializedAsync()
   {
@@ -173,17 +149,23 @@
       return;
     }
 
+
     await AuthState.LoadUserAsync();
+
 
     AuthenticationState state =
         await AuthenticationStateProvider
             .GetAuthenticationStateAsync();
 
+
     isAdmin =
-        state.User.IsInRole("Admin");
+        state.User.IsInRole(
+            "Admin");
+
 
     StateHasChanged();
   }
+
 
   private async Task LoadCategoriesAsync()
   {
@@ -192,6 +174,7 @@
       isLoading = true;
 
       errorMessage = null;
+
 
       categories =
           await CategoryApiClient.GetAllAsync();
@@ -215,6 +198,7 @@
         await JS.InvokeAsync<bool>(
             "confirm",
             "Are you sure you want to delete this category?");
+
 
     if (!confirmed)
     {

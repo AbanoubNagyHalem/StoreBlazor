@@ -1,0 +1,26 @@
+<div class="empty-state-box">
+
+  <div class="empty-state-icon">
+    @Icon
+  </div>
+
+  <h3>
+    @Title
+  </h3>
+
+  <p>
+    @Message
+  </p>
+
+</div>
+
+@code {
+  [Parameter]
+  public string Icon { get; set; } = "📭";
+
+  [Parameter]
+  public string Title { get; set; } = "Nothing here";
+
+  [Parameter]
+  public string Message { get; set; } = "";
+}

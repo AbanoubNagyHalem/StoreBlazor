@@ -1420,6 +1420,47 @@ main[b-kfuvyn5sux] {
     align-items: stretch;
   }
 }
+/* /Components/Shared/EmptyState.razor.rz.scp.css */
+.empty-state-box[b-e1vcmkdgvq] {
+  text-align: center;
+
+  padding: 4rem 1rem;
+
+  background: white;
+
+  border: 1px dashed #d1d5db;
+  border-radius: 16px;
+}
+
+.empty-state-icon[b-e1vcmkdgvq] {
+  margin-bottom: 1rem;
+
+  font-size: 2rem;
+}
+
+.empty-state-box h3[b-e1vcmkdgvq] {
+  margin-bottom: 0.5rem;
+}
+
+.empty-state-box p[b-e1vcmkdgvq] {
+  margin: 0;
+
+  color: #6b7280;
+}
+/* /Components/Shared/LoadingState.razor.rz.scp.css */
+.loading-state-box[b-6fq46i1g88] {
+  display: flex;
+  align-items: center;
+
+  gap: 0.75rem;
+
+  padding: 2rem;
+
+  background: white;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+}
 /* /Components/Shared/ProductCard.razor.rz.scp.css */
 .product-card[b-x10ikpg8br] {
   background: white;
