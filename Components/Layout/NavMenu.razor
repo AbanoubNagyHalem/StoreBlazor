@@ -79,7 +79,7 @@
         </NavLink>
 
 
-        @if (isAuthLoaded && isAdmin)
+        @if (isLoaded && isAdmin)
         {
             <NavLink class="sidebar-link" href="products/create">
 
@@ -177,8 +177,6 @@
 @code {
     private bool isLoaded;
 
-    private bool isAuthLoaded;
-
     private bool isAdmin;
 
 
@@ -191,19 +189,13 @@
         }
 
 
-        // النظام القديم ما زال مسؤولًا عن تحميل
-        // البيانات من sessionStorage
-        await AuthState.LoadUserAsync();
-
         AuthState.OnChange +=
             HandleAuthStateChanged;
 
-        // اسمع أي تغيير يحصل في AuthenticationStateProvider
-        AuthenticationStateProvider.AuthenticationStateChanged +=
-            HandleAuthenticationStateChanged;
 
+        await AuthState.LoadUserAsync();
 
-        await LoadAuthenticationStateAsync();
+        await RefreshAuthenticationStateAsync();
 
 
         isLoaded = true;
@@ -212,7 +204,7 @@
     }
 
 
-    private async Task LoadAuthenticationStateAsync()
+    private async Task RefreshAuthenticationStateAsync()
     {
         AuthenticationState state =
             await AuthenticationStateProvider
@@ -220,29 +212,17 @@
 
 
         isAdmin =
-            state.User.IsInRole("Admin");
-
-
-        isAuthLoaded = true;
+            state.User.IsInRole(
+                "Admin");
     }
 
 
-    private void HandleAuthenticationStateChanged(
-        Task<AuthenticationState> authenticationStateTask)
+    private void HandleAuthStateChanged()
     {
         _ = InvokeAsync(
             async () =>
             {
-                AuthenticationState state =
-                    await authenticationStateTask;
-
-
-                isAdmin =
-                    state.User.IsInRole("Admin");
-
-
-                isAuthLoaded = true;
-
+                await RefreshAuthenticationStateAsync();
 
                 StateHasChanged();
             });
@@ -279,16 +259,5 @@
     {
         AuthState.OnChange -=
             HandleAuthStateChanged;
-
-
-        AuthenticationStateProvider.AuthenticationStateChanged -=
-            HandleAuthenticationStateChanged;
-    }
-
-
-    private void HandleAuthStateChanged()
-    {
-        InvokeAsync(
-            StateHasChanged);
     }
 }

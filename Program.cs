@@ -77,11 +77,22 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     CategoryApiClient>();
 
+
+// ========================
+// Shared State
+// ========================
+
 builder.Services.AddScoped<
-SelectedProductState>();
+    SelectedProductState>();
+
+
+// ========================
+// UI / API Helpers
+// ========================
 
 builder.Services.AddScoped<
     ApiErrorMessageProvider>();
+
 
 var app =
     builder.Build();
@@ -101,13 +112,11 @@ app.UseStatusCodePagesWithReExecute(
     "/not-found",
     createScopeForStatusCodePages: true);
 
-
 app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
 app.MapStaticAssets();
-
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

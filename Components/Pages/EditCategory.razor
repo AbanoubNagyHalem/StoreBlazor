@@ -138,6 +138,7 @@
 
   private string? errorMessage;
 
+
   protected override async Task OnAfterRenderAsync(
       bool firstRender)
   {
@@ -187,6 +188,7 @@
     }
   }
 
+
   private async Task HandleUpdateAsync()
   {
     try
@@ -218,19 +220,11 @@
         return;
       }
 
-      if (response.StatusCode ==
-          System.Net.HttpStatusCode.Conflict)
-      {
-        errorMessage =
-            "A category with this name already exists.";
-
-        return;
-      }
-
       errorMessage =
-          ApiErrorMessageProvider.GetMessage(
-              response.StatusCode,
-              $"Could not update category. Status: {(int)response.StatusCode}");
+          await ApiErrorMessageProvider
+              .GetMessageAsync(
+                  response,
+                  $"Could not update category. Status: {(int)response.StatusCode}");
     }
     catch (HttpRequestException)
     {
@@ -242,6 +236,7 @@
       isSubmitting = false;
     }
   }
+
 
   private void GoBack()
   {

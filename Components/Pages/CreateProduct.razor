@@ -161,6 +161,7 @@
 
   private string? successMessage;
 
+
   protected override async Task OnAfterRenderAsync(
       bool firstRender)
   {
@@ -206,6 +207,7 @@
     }
   }
 
+
   private async Task HandleCreateAsync()
   {
     try
@@ -220,45 +222,28 @@
           await ProductApiClient.CreateAsync(
               model);
 
-      if (response.IsSuccessStatusCode)
-      {
-        successMessage =
-            "Product created successfully.";
-
-        model =
-            new CreateProductRequest();
-
-        if (module is not null)
-        {
-          await module.InvokeVoidAsync(
-              "scrollToTop");
-        }
-
-        return;
-      }
-
-      if (response.StatusCode ==
-          System.Net.HttpStatusCode.NotFound)
+      if (!response.IsSuccessStatusCode)
       {
         errorMessage =
-            "The selected category was not found.";
+            await ApiErrorMessageProvider
+                .GetMessageAsync(
+                    response,
+                    $"Could not create product. Status: {(int)response.StatusCode}");
 
         return;
       }
 
-      if (response.StatusCode ==
-          System.Net.HttpStatusCode.Conflict)
+      successMessage =
+          "Product created successfully.";
+
+      model =
+          new CreateProductRequest();
+
+      if (module is not null)
       {
-        errorMessage =
-            "A product with this name already exists.";
-
-        return;
+        await module.InvokeVoidAsync(
+            "scrollToTop");
       }
-
-      errorMessage =
-          ApiErrorMessageProvider.GetMessage(
-              response.StatusCode,
-              $"Could not create product. Status: {(int)response.StatusCode}");
     }
     catch (HttpRequestException)
     {
@@ -276,11 +261,13 @@
     }
   }
 
+
   private void GoBack()
   {
     Navigation.NavigateTo(
         "/products");
   }
+
 
   public async ValueTask DisposeAsync()
   {

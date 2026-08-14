@@ -27,7 +27,6 @@
 
     </div>
 
-
     @if (isAdmin)
     {
       <a class="btn btn-dark" href="/categories/create">
@@ -116,7 +115,6 @@
 
 </div>
 
-
 @code {
   [CascadingParameter]
   private Task<AuthenticationState>? AuthenticationStateTask
@@ -129,13 +127,11 @@
   private List<CategoryResponse> categories =
       [];
 
-
   private bool isLoading = true;
 
   private bool isDeleting;
 
   private bool isAdmin;
-
 
   private string? errorMessage;
 
@@ -156,21 +152,17 @@
       return;
     }
 
-
     await AuthState.LoadUserAsync();
-
 
     if (AuthenticationStateTask is not null)
     {
       AuthenticationState state =
           await AuthenticationStateTask;
 
-
       isAdmin =
           state.User.IsInRole(
               "Admin");
     }
-
 
     StateHasChanged();
   }
@@ -183,7 +175,6 @@
       isLoading = true;
 
       errorMessage = null;
-
 
       categories =
           await CategoryApiClient.GetAllAsync();
@@ -208,12 +199,10 @@
             "confirm",
             "Are you sure you want to delete this category?");
 
-
     if (!confirmed)
     {
       return;
     }
-
 
     try
     {
@@ -223,11 +212,9 @@
 
       successMessage = null;
 
-
       HttpResponseMessage response =
           await CategoryApiClient.DeleteAsync(
               categoryId);
-
 
       if (response.IsSuccessStatusCode)
       {
@@ -239,33 +226,11 @@
         return;
       }
 
-
-      if (response.StatusCode ==
-          System.Net.HttpStatusCode.NotFound)
-      {
-        errorMessage =
-            "Category was not found.";
-
-        return;
-      }
-
-
-      if (response.StatusCode ==
-              System.Net.HttpStatusCode.Conflict ||
-          response.StatusCode ==
-              System.Net.HttpStatusCode.BadRequest)
-      {
-        errorMessage =
-            "This category cannot be deleted because it has products assigned to it.";
-
-        return;
-      }
-
-
       errorMessage =
-          ApiErrorMessageProvider.GetMessage(
-              response.StatusCode,
-              $"Could not delete category. Status: {(int)response.StatusCode}");
+          await ApiErrorMessageProvider
+              .GetMessageAsync(
+                  response,
+                  $"Could not delete category. Status: {(int)response.StatusCode}");
     }
     catch (HttpRequestException)
     {

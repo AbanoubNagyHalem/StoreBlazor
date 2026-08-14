@@ -1,32 +1,69 @@
 using System.Net;
+using System.Net.Http.Json;
+using StoreBlazor.Models;
 
 namespace StoreBlazor.Services;
 
 public class ApiErrorMessageProvider
 {
-  public string GetMessage(
-      HttpStatusCode statusCode,
-      string defaultMessage = "The request could not be completed.")
-  {
-    return statusCode switch
+    public async Task<string> GetMessageAsync(
+        HttpResponseMessage response,
+        string defaultMessage,
+        CancellationToken cancellationToken = default)
     {
-      HttpStatusCode.Unauthorized =>
-          "You must login first.",
+        try
+        {
+            ApiErrorResponse? apiError =
+                await response.Content
+                    .ReadFromJsonAsync<ApiErrorResponse>(
+                        cancellationToken);
 
-      HttpStatusCode.Forbidden =>
-          "You do not have permission to perform this action.",
 
-      HttpStatusCode.NotFound =>
-          "The requested resource was not found.",
+            if (!string.IsNullOrWhiteSpace(
+                    apiError?.Message))
+            {
+                return apiError.Message;
+            }
 
-      HttpStatusCode.Conflict =>
-          "The request conflicts with existing data.",
 
-      HttpStatusCode.BadRequest =>
-          "The request contains invalid data.",
+            if (!string.IsNullOrWhiteSpace(
+                    apiError?.Detail))
+            {
+                return apiError.Detail;
+            }
 
-      _ =>
-          defaultMessage
-    };
-  }
+
+            if (!string.IsNullOrWhiteSpace(
+                    apiError?.Title))
+            {
+                return apiError.Title;
+            }
+        }
+        catch
+        {
+            // Fall back to the HTTP status code.
+        }
+
+
+        return response.StatusCode switch
+        {
+            HttpStatusCode.Unauthorized =>
+                "You must login first.",
+
+            HttpStatusCode.Forbidden =>
+                "You do not have permission to perform this action.",
+
+            HttpStatusCode.NotFound =>
+                "The requested resource was not found.",
+
+            HttpStatusCode.Conflict =>
+                "The request conflicts with existing data.",
+
+            HttpStatusCode.BadRequest =>
+                "The request contains invalid data.",
+
+            _ =>
+                defaultMessage
+        };
+    }
 }

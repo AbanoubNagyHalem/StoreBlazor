@@ -104,6 +104,7 @@
 
   private string? successMessage;
 
+
   protected override async Task OnAfterRenderAsync(
       bool firstRender)
   {
@@ -124,6 +125,7 @@
     StateHasChanged();
   }
 
+
   private async Task HandleCreateAsync()
   {
     try
@@ -138,30 +140,22 @@
           await CategoryApiClient.CreateAsync(
               model);
 
-      if (response.IsSuccessStatusCode)
-      {
-        successMessage =
-            "Category created successfully.";
-
-        model =
-            new CreateCategoryRequest();
-
-        return;
-      }
-
-      if (response.StatusCode ==
-          System.Net.HttpStatusCode.Conflict)
+      if (!response.IsSuccessStatusCode)
       {
         errorMessage =
-            "A category with this name already exists.";
+            await ApiErrorMessageProvider
+                .GetMessageAsync(
+                    response,
+                    $"Could not create category. Status: {(int)response.StatusCode}");
 
         return;
       }
 
-      errorMessage =
-          ApiErrorMessageProvider.GetMessage(
-              response.StatusCode,
-              $"Could not create category. Status: {(int)response.StatusCode}");
+      successMessage =
+          "Category created successfully.";
+
+      model =
+          new CreateCategoryRequest();
     }
     catch (HttpRequestException)
     {
@@ -173,6 +167,7 @@
       isSubmitting = false;
     }
   }
+
 
   private void GoBack()
   {
