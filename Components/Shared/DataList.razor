@@ -1,0 +1,19 @@
+@typeparam TItem
+
+@if (Items is not null)
+{
+  @foreach (TItem item in Items)
+  {
+    @ItemTemplate(item)
+  }
+}
+
+@code {
+  [Parameter]
+  public IEnumerable<TItem>? Items { get; set; }
+
+  [Parameter]
+  [EditorRequired]
+  public RenderFragment<TItem> ItemTemplate { get; set; } =
+      default!;
+}

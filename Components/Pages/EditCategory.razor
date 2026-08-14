@@ -2,10 +2,10 @@
 
 @inject CategoryApiClient CategoryApiClient
 @inject AdminPageGuard AdminPageGuard
+@inject ApiErrorMessageProvider ApiErrorMessageProvider
 @inject NavigationManager Navigation
 
 <PageTitle>Edit Category</PageTitle>
-
 
 <div class="form-page">
 
@@ -25,14 +25,12 @@
 
   </div>
 
-
   @if (successMessage is not null)
   {
     <div class="alert alert-success">
       @successMessage
     </div>
   }
-
 
   @if (errorMessage is not null)
   {
@@ -41,18 +39,9 @@
     </div>
   }
 
-
   @if (isLoading)
   {
-    <div class="loading-box">
-
-      <div class="spinner-border"></div>
-
-      <span>
-        Loading category...
-      </span>
-
-    </div>
+    <LoadingState Message="Loading category..." />
   }
   else if (notFound)
   {
@@ -76,14 +65,13 @@
   }
   else
   {
-    <div class="category-form">
+    <FormCard>
 
       <EditForm Model="@model" OnValidSubmit="HandleUpdateAsync">
 
         <DataAnnotationsValidator />
 
         <ValidationSummary />
-
 
         <div class="mb-4">
 
@@ -96,7 +84,6 @@
           <ValidationMessage For="@(() => model.Name)" />
 
         </div>
-
 
         <div class="form-actions">
 
@@ -119,7 +106,6 @@
 
           </button>
 
-
           <button type="button" class="btn btn-outline-secondary" disabled="@isSubmitting" @onclick="GoBack">
 
             Cancel
@@ -130,20 +116,17 @@
 
       </EditForm>
 
-    </div>
+    </FormCard>
   }
 
 </div>
-
 
 @code {
   [Parameter]
   public int Id { get; set; }
 
-
   private UpdateCategoryRequest model =
       new();
-
 
   private bool isLoading = true;
 
@@ -151,11 +134,9 @@
 
   private bool notFound;
 
-
   private string? successMessage;
 
   private string? errorMessage;
-
 
   protected override async Task OnAfterRenderAsync(
       bool firstRender)
@@ -165,17 +146,14 @@
       return;
     }
 
-
     bool allowed =
         await AdminPageGuard.EnsureAdminAsync(
             "/categories");
-
 
     if (!allowed)
     {
       return;
     }
-
 
     try
     {
@@ -183,14 +161,12 @@
           await CategoryApiClient.GetByIdAsync(
               Id);
 
-
       if (category is null)
       {
         notFound = true;
 
         return;
       }
-
 
       model =
           new UpdateCategoryRequest
@@ -211,7 +187,6 @@
     }
   }
 
-
   private async Task HandleUpdateAsync()
   {
     try
@@ -222,12 +197,10 @@
 
       errorMessage = null;
 
-
       HttpResponseMessage response =
           await CategoryApiClient.UpdateAsync(
               Id,
               model);
-
 
       if (response.IsSuccessStatusCode)
       {
@@ -237,7 +210,6 @@
         return;
       }
 
-
       if (response.StatusCode ==
           System.Net.HttpStatusCode.NotFound)
       {
@@ -245,7 +217,6 @@
 
         return;
       }
-
 
       if (response.StatusCode ==
           System.Net.HttpStatusCode.Conflict)
@@ -256,21 +227,10 @@
         return;
       }
 
-
-      if (response.StatusCode ==
-          System.Net.HttpStatusCode.Unauthorized ||
-          response.StatusCode ==
-          System.Net.HttpStatusCode.Forbidden)
-      {
-        errorMessage =
-            "You do not have permission to edit categories.";
-
-        return;
-      }
-
-
       errorMessage =
-          $"Could not update category. Status: {(int)response.StatusCode}";
+          ApiErrorMessageProvider.GetMessage(
+              response.StatusCode,
+              $"Could not update category. Status: {(int)response.StatusCode}");
     }
     catch (HttpRequestException)
     {
@@ -282,7 +242,6 @@
       isSubmitting = false;
     }
   }
-
 
   private void GoBack()
   {

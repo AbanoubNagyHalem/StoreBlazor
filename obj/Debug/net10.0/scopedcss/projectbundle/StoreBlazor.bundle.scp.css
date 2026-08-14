@@ -1440,6 +1440,15 @@ main[b-kfuvyn5sux] {
 
   color: #6b7280;
 }
+/* /Components/Shared/FormCard.razor.rz.scp.css */
+.form-card[b-330j7g8l39] {
+  padding: 1.5rem;
+
+  background: white;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+}
 /* /Components/Shared/LoadingState.razor.rz.scp.css */
 .loading-state-box[b-6fq46i1g88] {
   display: flex;

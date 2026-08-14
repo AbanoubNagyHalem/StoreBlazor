@@ -80,6 +80,8 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
 SelectedProductState>();
 
+builder.Services.AddScoped<
+    ApiErrorMessageProvider>();
 
 var app =
     builder.Build();

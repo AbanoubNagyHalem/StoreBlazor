@@ -1,11 +1,15 @@
-﻿<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+﻿<CascadingAuthenticationState>
 
-    <Found Context="routeData">
+    <Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
 
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <Found Context="routeData">
 
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+            <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
 
-    </Found>
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
 
-</Router>
+        </Found>
+
+    </Router>
+
+</CascadingAuthenticationState>

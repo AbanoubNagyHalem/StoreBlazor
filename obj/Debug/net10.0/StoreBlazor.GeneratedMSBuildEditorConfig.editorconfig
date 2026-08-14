@@ -51,6 +51,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcQXV0aFN0YXR1cy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/abano/OneDrive/Desktop/C\#/StoreBlazor/Components/Shared/DataList.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcRGF0YUxpc3QucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/abano/OneDrive/Desktop/C\#/StoreBlazor/Components/Shared/ErrorState.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcRXJyb3JTdGF0ZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
@@ -106,6 +110,10 @@ build_metadata.AdditionalFiles.CssScope = b-i00vf5dx4p
 [C:/Users/abano/OneDrive/Desktop/C\#/StoreBlazor/Components/Shared/EmptyState.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcRW1wdHlTdGF0ZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = b-e1vcmkdgvq
+
+[C:/Users/abano/OneDrive/Desktop/C\#/StoreBlazor/Components/Shared/FormCard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcRm9ybUNhcmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-330j7g8l39
 
 [C:/Users/abano/OneDrive/Desktop/C\#/StoreBlazor/Components/Shared/LoadingState.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcTG9hZGluZ1N0YXRlLnJhem9y

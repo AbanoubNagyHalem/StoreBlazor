@@ -2,10 +2,10 @@
 
 @inject CategoryApiClient CategoryApiClient
 @inject AdminPageGuard AdminPageGuard
+@inject ApiErrorMessageProvider ApiErrorMessageProvider
 @inject NavigationManager Navigation
 
 <PageTitle>Create Category</PageTitle>
-
 
 <div class="form-page">
 
@@ -25,14 +25,12 @@
 
   </div>
 
-
   @if (errorMessage is not null)
   {
     <div class="alert alert-danger">
       @errorMessage
     </div>
   }
-
 
   @if (successMessage is not null)
   {
@@ -41,15 +39,13 @@
     </div>
   }
 
-
-  <div class="category-form">
+  <FormCard>
 
     <EditForm Model="@model" OnValidSubmit="HandleCreateAsync">
 
       <DataAnnotationsValidator />
 
       <ValidationSummary />
-
 
       <div class="mb-4">
 
@@ -62,7 +58,6 @@
         <ValidationMessage For="@(() => model.Name)" />
 
       </div>
-
 
       <div class="form-actions">
 
@@ -85,7 +80,6 @@
 
         </button>
 
-
         <button type="button" class="btn btn-outline-secondary" disabled="@isSubmitting" @onclick="GoBack">
 
           Cancel
@@ -96,23 +90,19 @@
 
     </EditForm>
 
-  </div>
+  </FormCard>
 
 </div>
-
 
 @code {
   private CreateCategoryRequest model =
       new();
 
-
   private bool isSubmitting;
-
 
   private string? errorMessage;
 
   private string? successMessage;
-
 
   protected override async Task OnAfterRenderAsync(
       bool firstRender)
@@ -122,21 +112,17 @@
       return;
     }
 
-
     bool allowed =
         await AdminPageGuard.EnsureAdminAsync(
             "/categories");
-
 
     if (!allowed)
     {
       return;
     }
 
-
     StateHasChanged();
   }
-
 
   private async Task HandleCreateAsync()
   {
@@ -148,11 +134,9 @@
 
       successMessage = null;
 
-
       HttpResponseMessage response =
           await CategoryApiClient.CreateAsync(
               model);
-
 
       if (response.IsSuccessStatusCode)
       {
@@ -165,7 +149,6 @@
         return;
       }
 
-
       if (response.StatusCode ==
           System.Net.HttpStatusCode.Conflict)
       {
@@ -175,21 +158,10 @@
         return;
       }
 
-
-      if (response.StatusCode ==
-          System.Net.HttpStatusCode.Unauthorized ||
-          response.StatusCode ==
-          System.Net.HttpStatusCode.Forbidden)
-      {
-        errorMessage =
-            "You do not have permission to create categories.";
-
-        return;
-      }
-
-
       errorMessage =
-          $"Could not create category. Status: {(int)response.StatusCode}";
+          ApiErrorMessageProvider.GetMessage(
+              response.StatusCode,
+              $"Could not create category. Status: {(int)response.StatusCode}");
     }
     catch (HttpRequestException)
     {
@@ -201,7 +173,6 @@
       isSubmitting = false;
     }
   }
-
 
   private void GoBack()
   {

@@ -2,7 +2,7 @@
 
 @inject CategoryApiClient CategoryApiClient
 @inject AuthStateService AuthState
-@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ApiErrorMessageProvider ApiErrorMessageProvider
 @inject IJSRuntime JS
 
 <PageTitle>Categories</PageTitle>
@@ -63,53 +63,53 @@
   {
     <div class="categories-grid">
 
-      @foreach (
-          CategoryResponse category
-          in categories)
-      {
-        <div class="category-card">
+      <DataList Items="@categories">
 
-          <div class="category-icon">
-            🗂️
-          </div>
+        <ItemTemplate Context="category">
 
+          <div class="category-card">
 
-          <div class="category-content">
-
-            <div class="category-label">
-              CATEGORY
+            <div class="category-icon">
+              🗂️
             </div>
 
-            <h3 class="category-name">
-              @category.Name
-            </h3>
+            <div class="category-content">
+
+              <div class="category-label">
+                CATEGORY
+              </div>
+
+              <h3 class="category-name">
+                @category.Name
+              </h3>
+
+            </div>
+
+            @if (isAdmin)
+            {
+              <div class="category-actions">
+
+                <a class="btn btn-sm btn-outline-warning" href="@($"categories/edit/{category.Id}")">
+
+                  Edit
+
+                </a>
+
+                <button type="button" class="btn btn-sm btn-outline-danger" disabled="@isDeleting"
+                        @onclick="() => DeleteCategoryAsync(category.Id)">
+
+                  Delete
+
+                </button>
+
+              </div>
+            }
 
           </div>
 
+        </ItemTemplate>
 
-          @if (isAdmin)
-          {
-            <div class="category-actions">
-
-              <a class="btn btn-sm btn-outline-warning" href="@($"categories/edit/{category.Id}")">
-
-                Edit
-
-              </a>
-
-
-              <button type="button" class="btn btn-sm btn-outline-danger" disabled="@isDeleting"
-                      @onclick="() => DeleteCategoryAsync(category.Id)">
-
-                Delete
-
-              </button>
-
-            </div>
-          }
-
-        </div>
-      }
+      </DataList>
 
     </div>
   }
@@ -118,6 +118,14 @@
 
 
 @code {
+  [CascadingParameter]
+  private Task<AuthenticationState>? AuthenticationStateTask
+  {
+    get;
+    set;
+  }
+
+
   private List<CategoryResponse> categories =
       [];
 
@@ -152,14 +160,16 @@
     await AuthState.LoadUserAsync();
 
 
-    AuthenticationState state =
-        await AuthenticationStateProvider
-            .GetAuthenticationStateAsync();
+    if (AuthenticationStateTask is not null)
+    {
+      AuthenticationState state =
+          await AuthenticationStateTask;
 
 
-    isAdmin =
-        state.User.IsInRole(
-            "Admin");
+      isAdmin =
+          state.User.IsInRole(
+              "Admin");
+    }
 
 
     StateHasChanged();
@@ -231,26 +241,6 @@
 
 
       if (response.StatusCode ==
-          System.Net.HttpStatusCode.Unauthorized)
-      {
-        errorMessage =
-            "You must login first.";
-
-        return;
-      }
-
-
-      if (response.StatusCode ==
-          System.Net.HttpStatusCode.Forbidden)
-      {
-        errorMessage =
-            "You do not have permission to delete categories.";
-
-        return;
-      }
-
-
-      if (response.StatusCode ==
           System.Net.HttpStatusCode.NotFound)
       {
         errorMessage =
@@ -273,7 +263,9 @@
 
 
       errorMessage =
-          $"Could not delete category. Status: {(int)response.StatusCode}";
+          ApiErrorMessageProvider.GetMessage(
+              response.StatusCode,
+              $"Could not delete category. Status: {(int)response.StatusCode}");
     }
     catch (HttpRequestException)
     {

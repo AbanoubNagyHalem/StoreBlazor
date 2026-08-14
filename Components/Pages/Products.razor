@@ -3,8 +3,8 @@
 @inject ProductApiClient ProductApiClient
 @inject CategoryApiClient CategoryApiClient
 @inject AuthStateService AuthState
-@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject SelectedProductState SelectedProductState
+@inject ApiErrorMessageProvider ApiErrorMessageProvider
 @inject IJSRuntime JS
 
 <PageTitle>Products</PageTitle>
@@ -23,7 +23,6 @@
       </p>
     </div>
 
-
     @if (isAdmin)
     {
       <a href="/products/create" class="btn btn-dark">
@@ -35,15 +34,12 @@
 
   </div>
 
-
   <ProductFilters Search="@query.Search" SearchChanged="OnSearchChanged" CategoryId="@query.CategoryId"
                   CategoryIdChanged="OnCategoryChanged" SortBy="@query.SortBy" SortByChanged="OnSortByChanged"
                   SortDirection="@query.SortDirection" SortDirectionChanged="OnSortDirectionChanged" Categories="@categories"
                   OnApply="ApplyFiltersAsync" />
 
-
   <ErrorState Message="@errorMessage" />
-
 
   @if (!string.IsNullOrWhiteSpace(
           SelectedProductState.ProductName))
@@ -69,16 +65,22 @@
   }
   else
   {
+
+    
     <div class="products-grid">
 
-      @foreach (ProductResponse product in products)
-      {
-        <ProductCard Id="@product.Id" Name="@product.Name" Price="@product.Price" CategoryName="@product.CategoryName"
-                     OnSelected="SelectProduct" OnDelete="DeleteProductAsync" ShowAdminActions="@isAdmin" />
-      }
+      <DataList Items="@products">
+
+        <ItemTemplate Context="product">
+
+          <ProductCard Id="@product.Id" Name="@product.Name" Price="@product.Price" CategoryName="@product.CategoryName"
+                       OnSelected="SelectProduct" OnDelete="DeleteProductAsync" ShowAdminActions="@isAdmin" />
+
+        </ItemTemplate>
+
+      </DataList>
 
     </div>
-
 
     <ProductPagination CurrentPage="@query.Page" TotalPages="@totalPages" TotalCount="@totalCount"
                        OnPrevious="PreviousPageAsync" OnNext="NextPageAsync" />
@@ -86,15 +88,20 @@
 
 </div>
 
-
 @code {
+  [CascadingParameter]
+  private Task<AuthenticationState>? AuthenticationStateTask
+  {
+    get;
+    set;
+  }
+
+
   private List<ProductResponse> products =
       [];
 
-
   private List<CategoryResponse> categories =
       [];
-
 
   private ProductQueryParameters query =
       new()
@@ -104,16 +111,11 @@
         SortDirection = "asc"
       };
 
-
-  private string selectedProduct = "";
-
   private string? errorMessage;
-
 
   private bool isLoading = true;
 
   private bool isAdmin;
-
 
   private int totalCount;
 
@@ -140,14 +142,16 @@
     await AuthState.LoadUserAsync();
 
 
-    AuthenticationState state =
-        await AuthenticationStateProvider
-            .GetAuthenticationStateAsync();
+    if (AuthenticationStateTask is not null)
+    {
+      AuthenticationState state =
+          await AuthenticationStateTask;
 
 
-    isAdmin =
-        state.User.IsInRole(
-            "Admin");
+      isAdmin =
+          state.User.IsInRole(
+              "Admin");
+    }
 
 
     StateHasChanged();
@@ -308,6 +312,7 @@
         productName);
   }
 
+
   private async Task DeleteProductAsync(
       int productId)
   {
@@ -342,26 +347,6 @@
 
 
       if (response.StatusCode ==
-          System.Net.HttpStatusCode.Unauthorized)
-      {
-        errorMessage =
-            "You must login first.";
-
-        return;
-      }
-
-
-      if (response.StatusCode ==
-          System.Net.HttpStatusCode.Forbidden)
-      {
-        errorMessage =
-            "You do not have permission.";
-
-        return;
-      }
-
-
-      if (response.StatusCode ==
           System.Net.HttpStatusCode.NotFound)
       {
         errorMessage =
@@ -372,7 +357,9 @@
 
 
       errorMessage =
-          $"Delete failed. Status: {(int)response.StatusCode}";
+          ApiErrorMessageProvider.GetMessage(
+              response.StatusCode,
+              $"Delete failed. Status: {(int)response.StatusCode}");
     }
     catch (HttpRequestException)
     {
